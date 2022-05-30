@@ -18,6 +18,7 @@
 import os
 import re
 import pandas as pd
+import numpy as np
 
 class Metadata:
     """This class handles groups of image files and the associated metadata.
