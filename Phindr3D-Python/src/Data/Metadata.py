@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
+from pandas import *
+from ImageStack import *
+
 class Metadata:
     """This class handles groups of image files and the associated metadata.
        Individual file objects are handled by the ImageFile class.
@@ -39,6 +42,7 @@ class Metadata:
 
         # Set default values for member variables
         self.metadataFilename = ""
+        self.images = {}
 
 
     # end constructor
@@ -86,6 +90,43 @@ class Metadata:
             return False
         # else
 
+    def loadMetadataFile(self):
+        filepath = self.metadataFilename
+        metadata = read_table('C:/Users/fyi/Desktop/metaout_metadatafile.txt', usecols=lambda c: not c.startswith('Unnamed:'), delimiter='\t')
+        numrows = metadata.shape[0]
+        rows = []
+        # takes input metadata and stores in a list of tuples of each row
+        for i in range(numrows):
+            c1 = metadata.at[i, 'Channel_1']
+            c2 = metadata.at[i, 'Channel_2']
+            c3 = metadata.at[i, 'Channel_3']
+            well = metadata.at[i, 'Well']
+            field = metadata.at[i, 'Field']
+            stack = metadata.at[i, 'Stack']
+            metadatafile = metadata.at[i, 'MetadataFile']
+            imageid = metadata.at[i,'ImageID']
+            row = (c1, c2, c3, well, field, stack, metadatafile, imageid)
+            rows.append(row)
+
+        # puts each row into a dictionary, sorted by image ids
+        dict = {}
+        for row in rows:
+            if row[7] in dict:
+                dict[row[7]].append(row)
+            else:
+                dict[row[7]] = []
+                dict[row[7]].append(row)
+
+        # create list of stacks
+        stacks = {}
+        for image in dict:
+            stack = ImageStack()
+            stack.setStackNumber(image)
+            stack.addLayers(dict[image])
+            stacks[image] = stack
+        self.images = stacks
+
+
     # end metadataFileExists
 
 
@@ -105,7 +146,9 @@ if __name__ == '__main__':
     pass
 
 
-
+test = Metadata()
+test.loadMetadataFile()
+print(test.images[4.0].layers[11].channels[2].channelpath)
 
 
 # end main

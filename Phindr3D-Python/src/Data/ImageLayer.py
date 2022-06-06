@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
+from ImageChannel import *
+
 class ImageLayer:
     """This class handles groups of image files and the associated metadata.
        Static methods that draw closely from transliterations of the MATLAB functions
@@ -21,7 +23,25 @@ class ImageLayer:
 
     def __init__(self):
         """ImageChannel class constructor"""
+        self.well = None
+        self.field = None
+        self.channels = {}
         pass
+
+    def setWell(self, well):
+        self.well = well
+
+    def setField(self, field):
+        self.field = field
+
+    def addChannels(self, channels): # channels is a tuple/line of metadata
+        count = 1
+        for index in range(3):
+            newChannel = ImageChannel()
+            newChannel.setPath(channels[index])
+            self.channels[count] = newChannel
+            count += 1
+
 
 
 

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
+from ImageLayer import ImageLayer
+
 class ImageStack:
     """This class handles groups of image files and the associated metadata.
        Individual file objects are handled by the ImageFile class.
@@ -22,7 +24,20 @@ class ImageStack:
 
     def __init__(self):
         """ImageStack class constructor"""
+        self.stackNumber = None
+        self.layers = {}
         pass
+
+    def setStackNumber(self, number):
+        self.stackNumber = number
+
+    def addLayers(self, list):
+        for layer in list:
+            key = layer[5]
+            self.setStackNumber(key)
+            newLayer = ImageLayer()
+            newLayer.addChannels(layer)
+            self.layers[key] = newLayer
 
 
 
