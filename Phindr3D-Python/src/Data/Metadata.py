@@ -72,7 +72,8 @@ class Metadata:
             False on error."""
         if not isinstance(omf, str):
             return False
-        # else
+        else:
+            self.metadataFilename = omf
 
     # end SetMetadataFilename
 
@@ -92,7 +93,7 @@ class Metadata:
 
     def loadMetadataFile(self):
         filepath = self.metadataFilename
-        metadata = read_table('C:/Users/fyi/Desktop/metaout_metadatafile.txt', usecols=lambda c: not c.startswith('Unnamed:'), delimiter='\t')
+        metadata = read_table(filepath, usecols=lambda c: not c.startswith('Unnamed:'), delimiter='\t')
         numrows = metadata.shape[0]
         rows = []
         # takes input metadata and stores in a list of tuples of each row
@@ -147,6 +148,7 @@ if __name__ == '__main__':
 
 
 test = Metadata()
+test.SetMetadataFilename('C:/Users/fyi/Desktop/metaout_metadatafile.txt')
 test.loadMetadataFile()
 print(test.images[4.0].layers[11].channels[2].channelpath)
 
