@@ -23,31 +23,32 @@ class ImageLayer:
 
     def __init__(self):
         """ImageChannel class constructor"""
-        self.well = None
-        self.field = None
         self.channels = {}
+        self.otherparams = {}
         pass
 
-    def setWell(self, well):
-        self.well = well
-
-    def setField(self, field):
-        self.field = field
-
-    def addChannels(self, channels): # channels is a tuple/line of metadata
-        count = 1
-        for index in range(3):
-            newChannel = ImageChannel()
-            newChannel.setPath(channels[index])
-            self.channels[count] = newChannel
-            count += 1
-
-
-
-
+    def addChannels(self, row, columnlabels): # row is a list of elements from one row in metadata file
+        # rowi (row index) used to iterate row alongside columns
+        rowi = 0
+        for col in columnlabels:
+            if col.startswith('Channel_'):
+                strlen = len(col)
+                channelnum = int(col[8:strlen]) # channel number is always the 9th letter until end in 'Channel_X'
+                newchan = ImageChannel()
+                newchan.setPath(row[rowi])
+                self.channels[channelnum] = newchan
+            elif col.startswith('Stack'): # once iterator reaches 'Stack', no more additional params to store
+                return
+            else:
+                self.otherparams[col] = row[rowi]
+            rowi += 1
 
 
-# end class ImageChannel
+
+
+
+
+# end class ImageLayer
 
 
 

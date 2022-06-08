@@ -31,12 +31,13 @@ class ImageStack:
     def setStackNumber(self, number):
         self.stackNumber = number
 
-    def addLayers(self, list):
-        for layer in list:
-            key = layer[5]
+    def addLayers(self, layerlist, columnlabels):
+        # layerlist is a list of rows of metadata, each represented as a list of data elements
+        for layer in layerlist:
+            key = layer[layer.__len__() - 3] # index len - 3 will always be stack column
             self.setStackNumber(key)
             newLayer = ImageLayer()
-            newLayer.addChannels(layer)
+            newLayer.addChannels(layer, columnlabels)
             self.layers[key] = newLayer
 
 
