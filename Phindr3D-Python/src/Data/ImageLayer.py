@@ -22,7 +22,7 @@ class ImageLayer:
        can be found in the DataFunctions class."""
 
     def __init__(self):
-        """ImageChannel class constructor"""
+        """ImageLayer class constructor"""
         self.channels = {}
         self.otherparams = {}
         pass
