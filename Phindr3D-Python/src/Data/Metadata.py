@@ -19,11 +19,10 @@ import DataFunctions
 
 import pandas
 import os.path
-from ImageStack import *
+from Image import *
 
 class Metadata:
     """This class handles groups of image files and the associated metadata.
-       Individual file objects are handled by the ImageFile class.
        Static methods that draw closely from transliterations of the MATLAB functions
        can be found in the DataFunctions class."""
 
@@ -38,16 +37,6 @@ class Metadata:
 
 
     # end constructor
-
-
-    # Things required
-
-
-
-
-
-
-    # If I want to raise errors, what errors should I raise?
 
 
 
@@ -155,14 +144,14 @@ class Metadata:
                 rowdict[imageid] = []
                 rowdict[imageid].append(row)
 
-        # create list of stacks
-        stacks = {}
-        for image in rowdict:
-            stack = ImageStack()
-            stack.setStackNumber(image)
-            stack.addLayers(rowdict[image], columnlabels)
-            stacks[image] = stack
-        self.images = stacks
+        # create list of Images
+        imageSet = {}
+        for imageID in rowdict:
+            anImage = Image()
+            anImage.setStackNumber(imageID)
+            anImage.addLayers(rowdict[imageID], columnlabels)
+            imageSet[imageID] = anImage
+        self.images = imageSet
         self.SetMetadataFilename(filepath)
         return True
 
