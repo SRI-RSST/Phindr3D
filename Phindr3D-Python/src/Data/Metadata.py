@@ -16,10 +16,12 @@
 
 # Static functions for data and metadata handling
 
-
 import pandas
 import os.path
-from .Image import *
+try:
+    from .Image import *
+except ImportError:
+    from Image import *
 
 class Metadata:
     """This class handles groups of image files and the associated metadata.
@@ -30,6 +32,7 @@ class Metadata:
         """Metadata class constructor"""
 
         # Set default values for member variables
+        self.metadataLoadSuccess = False
         self.metadataFilename = ""
         self.images = {}
 
@@ -37,15 +40,6 @@ class Metadata:
     # end constructor
 
 
-
-    def fillMetadataFile(self):
-        """Use regular expression and file name to fill the metadata file with
-            image file information."""
-
-        # DataFunctions.createMetadata
-
-
-    # end fillMetadataFile
 
 
     # This class should also include
@@ -152,10 +146,38 @@ class Metadata:
             imageSet[imageID] = anImage
         self.images = imageSet
         self.SetMetadataFilename(filepath)
+
+        # Set an internal parameter to indicate that metadata has loaded successfully
+        self.metadataLoadSuccess = True
         return True
 
-
     # end loadMetadataFile
+
+
+    def computeImageParameters(self):
+        pass
+
+        # So! What all happens here?
+
+        # getTrainingFields
+        # getScalingFactorforImages
+        # output is lowerbound upperbound
+
+
+
+
+        """
+        getTrainingFields
+        getScalingFactorforImages
+        getImageThresholdValues
+    
+        param.intensityThreshold = quantile(param.intensityThresholdValues, param.intensityThresholdTuningFactor);
+        """
+
+
+
+    # end computeImageParameters
+
 
 
 # end class Metadata
@@ -169,17 +191,25 @@ if __name__ == '__main__':
     # Running will prompt user for a text file, image id, stack id, and channel number
     # Since this is only for testing purposes, assume inputted values are all correct types
 
-    metadatafile = input("Metadata file: ")
-    imageid = float(input("Image ID: "))
-    stackid = int(input("Stack ID: "))
-    channelnumber = int(input("Channel Number: "))
+    # metadatafile = input("Metadata file: ")
+    metadatafile = r"R:\\Phindr3D-Dataset\\neurondata\\Phindr3D_neuron-sample-data\\metaout_metadatafile.txt"
+
+    # imageid = float(input("Image ID: "))
+    # stackid = int(input("Stack ID: "))
+    # channelnumber = int(input("Channel Number: "))
     test = Metadata()
     if test.loadMetadataFile(metadatafile):
-        print('Result:', test.images[imageid].layers[stackid].channels[channelnumber].channelpath)
+        # print('Result:', test.images[imageid].layers[stackid].channels[channelnumber].channelpath)
         # using pandas, search through dataframe to find the correct element
-        metadata = pandas.read_table(metadatafile, usecols=lambda c: not c.startswith('Unnamed:'), delimiter='\t')
-        numrows = metadata.shape[0]
-        for i in range(numrows):
-            if (metadata.at[i, 'Stack'] == stackid) and (metadata.at[i, 'ImageID'] == imageid):
-                print('Expect:', metadata.at[i, f'Channel_{channelnumber}'])
+        # metadata = pandas.read_table(metadatafile, usecols=lambda c: not c.startswith('Unnamed:'), delimiter='\t')
+        #numrows = metadata.shape[0]
+        #for i in range(numrows):
+        #    if (metadata.at[i, 'Stack'] == stackid) and (metadata.at[i, 'ImageID'] == imageid):
+        #        print('Expect:', metadata.at[i, f'Channel_{channelnumber}'])
+        print("So, did it load? " + "Yes!" if test.metadataLoadSuccess else "No.")
+
+        test.computeImageParameters()
+
+
+
 # end main

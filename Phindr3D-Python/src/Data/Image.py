@@ -14,7 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
-from .Stack import Stack
+try:
+    from .Stack import Stack
+except ImportError:
+    from Stack import Stack
 
 class Image:
     """This class handles groups of image files and the associated metadata.
@@ -38,7 +41,7 @@ class Image:
             newStackLayer = Stack()
             newStackLayer.addChannels(layer, columnlabels)
             self.stackLayers[key] = newStackLayer
-
+    # end addStackLayers
 
 
 

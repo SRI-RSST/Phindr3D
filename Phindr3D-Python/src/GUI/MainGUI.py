@@ -90,10 +90,20 @@ class MainGUI(QWidget, external_windows):
                 # When meta data is loaded, using the loaded data, change the data for image viewing
                 # Consider adding another class to store all of the data (GUIDATA in MATLab?)
                 if self.metadata.loadMetadataFile(filename):
-                    alert = self.buildErrorWindow("Load Success", QMessageBox.Information)
-                    alert.exec()
+                    # If the file loaded correctly, proceed to calculating thresholds, scale factors, etc.
+                    self.metadata.computeImageParameters()
+
+
+
+
+                    # Update values of GUI widgets
+
+
+
+                    # alert = self.buildErrorWindow("Metadata Extraction Completed", QMessageBox.Information)
+                    # alert.exec()
                 else:
-                    alert = self.buildErrorWindow("Load Failed", QMessageBox.Critical)
+                    alert = self.buildErrorWindow("Something went wrong!! Load Failed", QMessageBox.Critical)
                     alert.exec()
 
         # metadataError will check if there is metadata. If there is not, create error message.
