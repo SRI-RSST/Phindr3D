@@ -155,7 +155,17 @@ class Metadata:
 
 
     def computeImageParameters(self):
-        pass
+        """Call after loading metadata. Calls functions that compute the scaling factors and thresholds.
+            On success, fills the scaling factor and intensity member variables and returns True.
+            If the metadata did not load successfully, returns False
+            On failure, returns False?
+            """
+        # If the metadata has not loaded successfully, return False
+        if not self.metadataLoadSuccess:
+            return False
+        #
+
+
 
         # So! What all happens here?
 
