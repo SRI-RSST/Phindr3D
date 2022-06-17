@@ -88,7 +88,6 @@ class MainGUI(QWidget, external_windows):
                 self.foundMetadata = True
                 print(filename)
                 # When meta data is loaded, using the loaded data, change the data for image viewing
-                # Consider adding another class to store all of the data (GUIDATA in MATLab?)
                 if self.metadata.loadMetadataFile(filename):
                     # If the file loaded correctly, proceed to calculating thresholds, scale factors, etc.
                     self.metadata.computeImageParameters()

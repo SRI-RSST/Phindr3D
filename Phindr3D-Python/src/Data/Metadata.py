@@ -18,6 +18,8 @@
 
 import pandas
 import os.path
+import numpy as np
+
 try:
     from .Image import *
 except ImportError:
@@ -38,17 +40,6 @@ class Metadata:
 
 
     # end constructor
-
-
-
-
-    # This class should also include
-    # rescale intensities
-    # threshold images
-
-    # class attributes
-    # output metadata file name
-
 
 
     def SetMetadataFilename(self, omf):
@@ -126,7 +117,6 @@ class Metadata:
         columnlabels.append('MetadataFile')
         columnlabels.append('ImageID')
 
-
         # puts each row into a dictionary, sorted by image ids
         rowdict = {}
         for row in rows:
@@ -150,8 +140,92 @@ class Metadata:
         # Set an internal parameter to indicate that metadata has loaded successfully
         self.metadataLoadSuccess = True
         return True
-
     # end loadMetadataFile
+
+    def GetNumChannels(self):
+        try:
+            for image in self.images:
+                for stack in self.images[image].stackLayers:
+                    # This will return after the first stack in the first image
+                    return len(self.images[image].stackLayers[stack].channels)
+        except AttributeError:
+            # If any of the members can't be found, AttributeError will be raised
+            return 0
+        # if there are no images or no stacks, there are no channels
+        return 0
+    # end GetNumChannels
+
+    def GetAllTreatments(self):
+        """If there was a Treatment column in the metadata, Stack instances
+            in stackLayers will have Treatment data. There should be a unique
+            Treatment value for all stackLayers in an image, but if not, the
+            Stack.GetTreatment method returns a list of the values found.
+            This method chooses the first from the list, in such a case.
+            This method creates a dictionary of imageIDs and the Treatment values,
+            if they exist, or None if not. On error, returns an empty dictionary."""
+        allTreatments = {}
+        try:
+            if len(self.images) > 0:
+                for imgID in self.images:
+                    tmpTreat = self.images[imgID].GetTreatment()
+                    if isinstance(tmpTreat, str):
+                        treat = tmpTreat
+                    elif isinstance(tmpTreat, list):
+                        treat = tmpTreat[0]
+                    else:
+                        treat = None
+                    allTreatments[imgID] = treat
+            else:
+                pass
+            return allTreatments
+        except AttributeError:
+            # Return an empty dictionary
+            return {}
+    # end GetAllTreatments
+
+    def GetTreatmentTypes(self):
+        """If there was a Treatment column in the metadata, Stack instances
+            in stackLayers will have Treatment data. There should be a unique
+            Treatment value for all stackLayers in an image, but if not, the
+            Stack.GetTreatment method returns a list of the values found.
+            This method collects the treatment types, including multiple treatments
+            in the same image, if this condition exists.
+            This method returns a list of strings of all treatment types if they
+            exist, or an empty string if not. Returns an empty string on error. """
+        treatmentList = []
+        try:
+            if len(self.images) > 0:
+                for imgID in self.images:
+                    tmpTreat = self.images[imgID].GetTreatment()
+                    if isinstance(tmpTreat, str):
+                        treatmentList.append(tmpTreat)
+                    elif isinstance(tmpTreat, list):
+                        treatmentList.extend(tmpTreat)
+                # Use set to find unique values in a list, then change type back to list
+                treatmentList = list(set(treatmentList))
+            else:
+                pass
+            return treatmentList
+        except AttributeError:
+            # Return an empty list
+            return []
+    # end GetTreatmentTypes
+
+    def GetAllImageIDs(self):
+        """Returns a list of all the image ID values, if found.
+            something else if not."""
+        idList = []
+        try:
+            if len(self.images) > 0:
+                for imgID in self.images:
+                    idList.append(imgID)
+            else:
+                pass
+            return idList
+        except AttributeError:
+            # Return an empty list
+            return []
+    # end GetAllImageIDs
 
 
     def computeImageParameters(self):
@@ -166,28 +240,17 @@ class Metadata:
         #
 
 
-
-        # So! What all happens here?
-
-        # getTrainingFields
-        # getScalingFactorforImages
-        # output is lowerbound upperbound
-
-
-
-
-        """
-        getTrainingFields
-        getScalingFactorforImages
-        getImageThresholdValues
-    
-        param.intensityThreshold = quantile(param.intensityThresholdValues, param.intensityThresholdTuningFactor);
-        """
-
-
-
+        return True
     # end computeImageParameters
 
+
+
+    # This class should also include
+    # rescale intensities
+    # threshold images
+
+    # class attributes
+    # output metadata file name
 
 
 # end class Metadata
@@ -196,30 +259,30 @@ class Metadata:
 
 if __name__ == '__main__':
     """Tests of the Metadata class that can be run directly."""
-
     # For testing purposes:
     # Running will prompt user for a text file, image id, stack id, and channel number
     # Since this is only for testing purposes, assume inputted values are all correct types
 
-    # metadatafile = input("Metadata file: ")
-    metadatafile = r"R:\\Phindr3D-Dataset\\neurondata\\Phindr3D_neuron-sample-data\\metaout_metadatafile.txt"
+    metadatafile = input("Metadata file: ")
+    # metadatafile = r"R:\\Phindr3D-Dataset\\neurondata\\Phindr3D_neuron-sample-data\\metaout_metadatafile.txt"
+    #metadatafile = r"R:\\Phindr3D-Dataset\\Phindr3D_TreatmentID_sample_data\\metadata_python.txt"
 
-    # imageid = float(input("Image ID: "))
-    # stackid = int(input("Stack ID: "))
-    # channelnumber = int(input("Channel Number: "))
+    imageid = float(input("Image ID: "))
+    stackid = int(input("Stack ID: "))
+    channelnumber = int(input("Channel Number: "))
     test = Metadata()
     if test.loadMetadataFile(metadatafile):
-        # print('Result:', test.images[imageid].layers[stackid].channels[channelnumber].channelpath)
+        print('Result:', test.images[imageid].layers[stackid].channels[channelnumber].channelpath)
         # using pandas, search through dataframe to find the correct element
-        # metadata = pandas.read_table(metadatafile, usecols=lambda c: not c.startswith('Unnamed:'), delimiter='\t')
-        #numrows = metadata.shape[0]
-        #for i in range(numrows):
-        #    if (metadata.at[i, 'Stack'] == stackid) and (metadata.at[i, 'ImageID'] == imageid):
-        #        print('Expect:', metadata.at[i, f'Channel_{channelnumber}'])
+        metadata = pandas.read_table(metadatafile, usecols=lambda c: not c.startswith('Unnamed:'), delimiter='\t')
+        numrows = metadata.shape[0]
+        for i in range(numrows):
+            if (metadata.at[i, 'Stack'] == stackid) and (metadata.at[i, 'ImageID'] == imageid):
+                print('Expect:', metadata.at[i, f'Channel_{channelnumber}'])
         print("So, did it load? " + "Yes!" if test.metadataLoadSuccess else "No.")
-
-        test.computeImageParameters()
-
-
+        print("===")
+        print("Running computeImageParameters: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
+    else:
+        print("loadMetadataFile was unsuccessful")
 
 # end main

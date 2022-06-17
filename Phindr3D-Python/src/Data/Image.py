@@ -43,8 +43,28 @@ class Image:
             self.stackLayers[key] = newStackLayer
     # end addStackLayers
 
-
-
+    def GetTreatment(self):
+        """Treatment is an optional column in the metadata. Treatment values are stored
+            on separate lines, though one image should have a unique treatment value.
+            This method gets the Treatment values from the member stackLayers, if they exist.
+            If they are all None, this method returns None. If there is a unique non-None value,
+            this method returns that value. If there are multiple values, this method returns a list
+            of the different values found."""
+        tmpList = []
+        try:
+            for stkID in self.stackLayers:
+                tmpList.append(self.stackLayers[stkID].GetTreatment())
+        except AttributeError:
+            return None
+        # Use set to find unique values in a list, then change type back to list
+        treatmentValList = list(set(tmpList))
+        if len(treatmentValList) == 0:
+            return None
+        elif len(treatmentValList) == 1:
+            return treatmentValList[0]
+        else:
+            return treatmentValList
+    # end GetTreatment
 
 # end class Image
 
