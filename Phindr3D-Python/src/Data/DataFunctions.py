@@ -129,10 +129,10 @@ class DataFunctions:
         #make sure rows is not empty and that Channel and Stack are in the groups.
         if len(rows) == 0:
             print('\nFailed to create metadata. No regex matches found in folder.\n')
-            return None
+            return False
         if ('Channel' not in rows[0].keys()) or ('Stack' not in rows[0].keys()):
             print('\nFailed to create metadata. regex must contain "Channel" and "Stack" groups.')
-            return None
+            raise MissingChannelStackError
         tmpdf = pd.DataFrame(rows)
         #make new dataframe with desired colummns
         tags = tmpdf.columns
@@ -165,6 +165,7 @@ class DataFunctions:
             df[f'Channel_{chan}'] = chandf['_file']
         df.to_csv(metadatafilename, sep='\t', index=False)
         print(f'Metadata file created at \n{metadatafilename}')
+        return True # return value to indicate success of function
 
     # end createMetadata
 
@@ -216,6 +217,10 @@ def test_parseAndCompareRegex():
 
 # end test_parseAndCompareRegex
 
+# error classes
+
+class MissingChannelStackError(Exception):
+    pass
 
 if __name__ == '__main__':
     """Tests of the static methods that can be run directly."""

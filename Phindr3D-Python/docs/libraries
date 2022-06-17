@@ -2,9 +2,9 @@ List of libraries used:
 - PyQt5.Widgetss
 - PyQt5.QtGui
 - PyQt5.QtCore
-- pyqtgraph (to be replaced?)
 - matplotlib
 - numpy
 - scipy
 - sys
-- pillow
+- random
+- sklearn

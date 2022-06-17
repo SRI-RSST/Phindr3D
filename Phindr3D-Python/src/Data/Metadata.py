@@ -264,9 +264,6 @@ if __name__ == '__main__':
     # Since this is only for testing purposes, assume inputted values are all correct types
 
     metadatafile = input("Metadata file: ")
-    # metadatafile = r"R:\\Phindr3D-Dataset\\neurondata\\Phindr3D_neuron-sample-data\\metaout_metadatafile.txt"
-    #metadatafile = r"R:\\Phindr3D-Dataset\\Phindr3D_TreatmentID_sample_data\\metadata_python.txt"
-
     imageid = float(input("Image ID: "))
     stackid = int(input("Stack ID: "))
     channelnumber = int(input("Channel Number: "))
