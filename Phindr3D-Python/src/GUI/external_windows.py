@@ -238,15 +238,7 @@ class extractWindow(QDialog):
             # replace '?<' patterns with '?P<' to make compatible with re.fullmatch function
             # first checks if '?<' corresponds to a '?<=' or '?<!' pattern first before replacing
             # part of Python specific regular expression syntax
-
-            regexlen = regex.__len__()
-            for i in range(regexlen):
-                if regex[i] == '<':
-                    if i > 0:
-                        if regex[i - 1] == '?':
-                            if i < regexlen - 1:
-                                if regex[i + 1] != '!' and regex[i + 1] != '=':
-                                    regex = regex[:i] + 'P' + regex[i:]
+            regex = DataFunctions.regexPatternCompatibility(regex)
             try:
                 alert = QMessageBox()
                 try:

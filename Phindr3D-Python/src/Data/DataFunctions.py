@@ -101,6 +101,28 @@ class DataFunctions:
             return os.path.exists(theDir)
     # end directoryExists
 
+    @staticmethod
+    def regexPatternCompatibility(regex):
+        """Provides compatibility between MATLAB regular expressions and Python.
+            Replaces '?<' patterns with '?P<' to make compatible with re.fullmatch function.
+            It first checks if '?<' corresponds to a '?<=' or '?<!' pattern first before replacing
+            part of Python specific regular expression syntax."""
+        # set the default value if no modifications are necessary
+        outstring = ""
+        strlist = regex.split("?<")
+        if len(strlist) <= 1:
+            return regex
+        else:
+            for i in range(len(strlist)-1):
+                outstring = outstring+strlist[i]
+                try:
+                    theSep = "?<" if (strlist[i+1][0] == '=' or strlist[i+1][0] == '!') else "?P<"
+                except IndexError:
+                    theSep = "?<"
+                outstring = outstring + theSep
+            outstring = outstring+strlist[len(strlist)-1]
+        return outstring
+    # end regexPatternCompatibility
 
     @staticmethod
     def createMetadata(folder_path, regex, mdatafilename='metadata_python.txt'):
@@ -223,8 +245,7 @@ if __name__ == '__main__':
     """Tests of the static methods that can be run directly."""
     #test_directoryExists()
 
-    test_parseAndCompareRegex()
-
+    # test_parseAndCompareRegex()
 
 
 # end if main
