@@ -176,7 +176,7 @@ class extractWindow(QDialog):
         largetext = QFont("Arial", 12, 1)
         self.setWindowTitle("Extract Metadata")
         directory = "Image Root Directory"
-        samplefilename = "Sample File Name"
+        self.samplefilename = "Sample File Name"
         layout = QGridLayout()
         imagerootbox = QTextEdit()
         imagerootbox.setReadOnly(True)
@@ -191,7 +191,7 @@ class extractWindow(QDialog):
 
         samplefilebox = QTextEdit()
         samplefilebox.setReadOnly(True)
-        samplefilebox.setPlaceholderText(samplefilename)
+        samplefilebox.setPlaceholderText(self.samplefilename)
         samplefilebox.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         samplefilebox.setFont(largetext)
         samplefilebox.setFixedSize(450, 30)
@@ -235,7 +235,6 @@ class extractWindow(QDialog):
             imagedir = imagerootbox.toPlainText()
             regex = expressionbox.text()
             outputname = outputfilebox.text()
-            datas = DataFunctions()
             # replace '?<' patterns with '?P<' to make compatible with re.fullmatch function
             # first checks if '?<' corresponds to a '?<=' or '?<!' pattern first before replacing
             # part of Python specific regular expression syntax
@@ -252,9 +251,9 @@ class extractWindow(QDialog):
                 alert = QMessageBox()
                 try:
                     if outputname != "":
-                        created = datas.createMetadata(imagedir, regex, outputname)
+                        created = DataFunctions.createMetadata(imagedir, regex, outputname)
                     else:
-                        created = datas.createMetadata(imagedir, regex)
+                        created = DataFunctions.createMetadata(imagedir, regex)
                     if created:
                         alert.setText("Metadata creation success.")
                         alert.setIcon(QMessageBox.Information)
@@ -275,15 +274,53 @@ class extractWindow(QDialog):
                 alert.setIcon(QMessageBox.Critical)
                 alert.show()
                 alert.exec()
+
         def evalRegex():
             regex = expressionbox.text()
             samplefile = samplefilebox.toPlainText()
-            if regex == "" or samplefile == samplefilename:
-                return
-            datas = DataFunctions()
-            regexdict = datas.parseAndCompareRegex(samplefile, regex)
-            if regexdict != None:
-                print(regexdict)
+
+
+            # if regex == "" or samplefile == "":
+                # show error window for regex blank, different error for samplefile blank
+            #    print("regex field is blank or samplefile thing: "+samplefile+"")
+            #    return
+            #DataFunctions.parseAndCompareRegex(samplefile, regex)
+            #if regexdict != None:
+            #    print(regexdict)
+
+            # testdict = {"one": 1, "two": 2, "three": 3}
+            # testdict.keys()
+
+            reout = {}
+
+            winex = QDialog()
+            winex.setWindowTitle("Evaluate Regular Expression")
+            winlayout = QGridLayout()
+            labelText = "Regular Expression Match"
+            # List of regex keys and values
+            relist = QListWidget()
+            if len(reout) == 0:
+                relist.addItem("No results")
+            else:
+                for rekey in reout.keys():
+                    nextline = str(rekey)+" ::: "+str(reout[rekey])
+                    relist.addItem(nextline)
+            # Ok button closes the window
+            reok = QPushButton("Ok")
+            # button behaviour
+            def okPressed():
+                winex.close()
+            reok.clicked.connect(okPressed)
+
+            # add the widgets to the layout
+            winlayout.addWidget(QLabel(labelText))
+            winlayout.addWidget(relist)
+            winlayout.addWidget(reok)
+            # add the layout and show the window
+            winex.setLayout(winlayout)
+            winex.show()
+            winex.exec()
+        #end evalRegex
 
         cancel.clicked.connect(self.close)
         selectimage.clicked.connect(selectImageDir)
@@ -301,6 +338,8 @@ class extractWindow(QDialog):
         layout.setSpacing(10)
         self.setLayout(layout)
         self.setFixedSize(self.minimumSizeHint())
+    # end __init__
+# end extractWindow
 
 class resultsWindow(QDialog):
     def __init__(self):
@@ -452,7 +491,7 @@ class resultsWindow(QDialog):
         alert.setText(errormessage)
         alert.setIcon(icon)
         return alert
-
+# end resultsWindow
 
 class paramWindow(QDialog):
     def __init__(self):
@@ -523,7 +562,7 @@ class paramWindow(QDialog):
         trainingimages = QLineEdit()
         trainingimages.setFixedWidth(30)
         usebackground = QCheckBox("Use Background Voxels for comparing") # text is cutoff, don't know actual line?
-        normalise = QCheckBox("Normalise Intesity\n Per Condition")
+        normalise = QCheckBox("Normalise Intensity\n Per Condition")
         trainbycondition = QCheckBox("Train by condition")
         leftdropdown = QComboBox()
         leftdropdown.setEnabled(False)
@@ -726,3 +765,4 @@ class external_windows():
 
     def buildColorchannelWindow(self):
         return colorchannelWindow()
+

@@ -41,12 +41,12 @@ class DataFunctions:
 
         # Check that both sampleFile and regex are strings
 
-        m = re.fullmatch(regex, sampleFile)
-        if m != None:
-            pass
+        #m = re.fullmatch(regex, sampleFile)
+        #if m != None:
+        #    pass
             # ...
 
-
+        print("Finished parseAndCompareRegex")
 
     # end parseAndCompareRegex
 
