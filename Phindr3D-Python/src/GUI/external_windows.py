@@ -270,21 +270,29 @@ class extractWindow(QDialog):
         def evalRegex():
             regex = expressionbox.text()
             samplefile = samplefilebox.toPlainText()
-
-
-            # if regex == "" or samplefile == "":
-                # show error window for regex blank, different error for samplefile blank
-            #    print("regex field is blank or samplefile thing: "+samplefile+"")
-            #    return
-            #DataFunctions.parseAndCompareRegex(samplefile, regex)
-            #if regexdict != None:
-            #    print(regexdict)
-
-            # testdict = {"one": 1, "two": 2, "three": 3}
-            # testdict.keys()
-
-            reout = {}
-
+            if regex == "":
+                alert = QMessageBox()
+                alert.setWindowTitle("Error")
+                alert.setText("Please enter a regular expression to evaluate")
+                alert.setIcon(QMessageBox.Critical)
+                alert.show()
+                alert.exec()
+                return
+            if samplefile == "":
+                alert = QMessageBox()
+                alert.setWindowTitle("Error")
+                alert.setText("No sample file was found. Please check the selected image directory.")
+                alert.setIcon(QMessageBox.Critical)
+                alert.show()
+                alert.exec()
+                return
+            # replace '?<' patterns with '?P<' to make compatible with re.fullmatch function
+            # first checks if '?<' corresponds to a '?<=' or '?<!' pattern first before replacing
+            # part of Python specific regular expression syntax
+            regex = DataFunctions.regexPatternCompatibility(regex)
+            # parse the sample file with the regular expression to find field values
+            reout = DataFunctions.parseAndCompareRegex(samplefile, regex)
+            # Create the GUI that displays the output
             winex = QDialog()
             winex.setWindowTitle("Evaluate Regular Expression")
             winlayout = QGridLayout()
