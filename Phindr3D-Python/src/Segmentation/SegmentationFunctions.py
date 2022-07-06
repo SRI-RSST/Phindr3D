@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
+import tifffile as tf
+import numpy as np
+
 class SegmentationFunctions:
     """Static methods for segmentation. Referenced from
     https://github.com/DWALab/Phindr3D/tree/9b95aebbd2a62c41d3c87a36f1122a78a21019c8/Lib
@@ -25,6 +28,44 @@ class SegmentationFunctions:
     @staticmethod
     def getsomefiles():
         pass
+
+    @staticmethod
+    def imfinfo(filename):
+        class info:
+            pass
+        info = info()
+        tif = tf.TiffFile(filename)
+        file = tif.pages[0]
+        immetadata = {}
+        for tag in file.tags.values():
+            immetadata[tag.name] = tag.value
+        info.Height = immetadata['ImageLength']
+        info.Width = immetadata['ImageWidth']
+        info.Format = 'tif'
+        return info 
+    
+    @staticmethod
+    def getImageThreshold(IM):
+        maxBins = 256
+        freq, binEdges = np.histogram(IM.flatten(), bins=maxBins)
+        binCenters = binEdges[:-1] + np.diff(binEdges)/2
+        meanIntensity = np.mean(IM.flatten())
+        numThresholdParam = len(freq)
+        binCenters -= meanIntensity
+        den1 = np.sqrt((binCenters**2) @ freq.T)
+        numAllPixels = np.sum(freq) #freq should hopefully be a 1D vector so summ of all elements should be right.
+        covarMat = np.zeros(numThresholdParam)
+        for iThreshold in range(numThresholdParam):
+            numThreshPixels = np.sum(freq[binCenters > binCenters[iThreshold]])
+            den2 = np.sqrt( (((numAllPixels - numThreshPixels)*(numThreshPixels))/numAllPixels) )
+            if den2 == 0:
+                covarMat[iThreshold] = 0 #dont want to select these, also want to avoid nans
+            else:
+                covarMat[iThreshold] = (binCenters @ (freq * (binCenters > binCenters[iThreshold])).T) / (den1*den2) #i hope this is the right mix of matrix multiplication and element-wise stuff.
+        imThreshold = np.argmax(covarMat) #index makes sense here.
+        imThreshold = binCenters[imThreshold] + meanIntensity
+        return imThreshold
+
 
 
 # end SegmentationFunctions

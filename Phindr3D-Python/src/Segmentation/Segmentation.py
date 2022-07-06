@@ -16,6 +16,8 @@
 
 
 from .SegmentationFunctions import *
+import json
+import pandas as pd
 
 class Segmentation:
     """This class ...
@@ -24,6 +26,28 @@ class Segmentation:
 
     def __init__(self):
         """Segmentation class constructor"""
+        self.defaultSettings = {
+            'min_area_spheroid':200.0,
+            'intensity_threshold':1000.0,
+            'radius_spheroid':75.0,
+            'smoothin_param':0.01,
+            'scale_spheroid':1.0,
+            'entropy_threshold':1.0,
+            'max_img_fraction':0.25
+            }
+        self.settings = self.defaultSettings
+        self.metadata = None
+    
+    def saveSettings(self, outputpath):
+        with open(outputpath, 'w', encoding='utf-8') as f:
+            json.dump(self.settings, f, ensure_ascii=False, indent=4)
+
+    def loadSettings(self, settingJsonPath):
+        with open(settingJsonPath, 'r') as f:
+            newsettings = json.load(f)
+        self.settings = newsettings
+
+    
 
 
     # end constructor
