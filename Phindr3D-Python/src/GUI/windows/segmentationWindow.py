@@ -169,14 +169,20 @@ class segmentationWindow(QDialog):
                     outputbutton.setText(f'{dirname[:10]}...{dirname[-10:]}')
                 else:
                     outputbutton.setText(dirname)
+                self.segmentation.outputDir = dirname
                 outputbutton.setToolTip(dirname)
             else:
                 alert = self.buildErrorWindow("Select Valid Directory.", QMessageBox.Critical)
                 alert.exec()
         
         def segmentImages(self):
-            metadata = self.metadata
-            segparams = self.segmentation.settings
+            if self.segmentation.outputDir == None:
+                self.setOutputPath(self, outputpath)
+            self.segmentation.createSubfolders()
+            self.segmentation.RunSegmentation(self.metadata)
+            
+            #do some stuff
+            print('Yep, I("segment") was definitely clicked.')
 
         selectmetadata.clicked.connect(lambda: loadMetadata(self, selectmetadata))
         outputpath.clicked.connect(lambda: setOutputPath(self, outputpath))

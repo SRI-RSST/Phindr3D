@@ -14,8 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
-import tifffile as tf
+import cv2 as cv
 import numpy as np
+import tifffile as tf
+import skimage.io as io
+from scipy import ndimage
+from skimage import filters
+from skimage import morphology as morph
+from skimage import segmentation as seg
+
+
 
 class SegmentationFunctions:
     """Static methods for segmentation. Referenced from
@@ -45,6 +53,214 @@ class SegmentationFunctions:
         return info 
     
     @staticmethod
+    def stdfilt(img, kernel_size=5):
+        #called in getfsImage
+        """
+        apparently this is a faster way to compute std deviation filter ( https://nickc1.github.io/python,/matlab/2016/05/17/Standard-Deviation-(Filters)-in-Matlab-and-Python.html )
+        
+        result is similar to matlab stdfilt function but not perfect match.
+        """
+        c1 = ndimage.filters.uniform_filter(img, size=kernel_size, mode='reflect')
+        c2 = ndimage.filters.uniform_filter((img*img), size=kernel_size, mode='reflect')
+        res = c2 - c1*c1
+        res[res < 0] = 0
+        return np.sqrt(res)
+    
+    @staticmethod
+    def smoothImage(IM, cutOff):
+        #smooths image in frequency domain
+        m = np.max(IM.shape)
+        if cutOff > 0.99:
+            cutOff = 0.99
+        elif cutOff <= 0: #in matlab code is <. changed to <= because min value it is reset to is 0.1
+            cutOff = 0.01
+        m /= 2
+        x, y = np.mgrid[ -(m-0.5):(m-0.5)+1, -(m-0.5):(m-0.5)+1 ] #might need to use actual meshgrid and define index locations with linspace or arange
+        x /= m
+        y /= m #shouldnt this be divided by n? who knows
+        x = np.sqrt(x**2 + y**2)
+        x = (x < cutOff).astype(np.float64)
+        struct = np.ones((50,50))/(2500) #50 by 50 seems very big, but whatever
+        x = cv.filter2D(x, -1, struct)
+        x[x<0] = 0
+        return np.abs(np.fft.ifft2(np.fft.fftshift(np.fft.fft2(IM))*x))
+    
+    @staticmethod
+    def imadjust(img, inrange=[0,1], outrange=[0,1], gamma=1):
+        #convert image range from inrage to outrange # solution from ( https://stackoverflow.com/questions/39767612/what-is-the-equivalent-of-matlabs-imadjust-in-python )
+        a, b = inrange
+        c, d = outrange
+        adjusted = (((img - a)/(b-a)) ** gamma) * (d-c) + c
+        return adjusted
+
+    @staticmethod
+    def bwareaopen(img, num, conn=8):
+        """
+        like morphological opening, but dont use a filter, just do connected components and remove small groups of connected components
+
+        img: binary image
+        num: number of components threshold for being allowed
+        """
+        #want fully connected components
+        if conn == 8:
+            struct = np.ones((3,3))
+        elif conn == 4:
+            struct = np.ones((3,3))
+            struct[0, 0] = 0
+            struct[-1, 0] = 0
+            struct[0, -1] = 0
+            struct[-1, -1] = 0 #take out corners
+        labelled, dump = ndimage.label(img, structure = struct)
+        labels = np.unique(labelled)
+        for label in labels:
+            if np.sum(labelled == label) < num:
+                img[labelled == label] = 0 
+        return img
+    
+    @staticmethod
+    def segmentImage(self, I, minArea):
+        imthreshold = self.getImageThreshold(I.astype(np.float64))
+        bw = self.bwareaopen(I>imthreshold, minArea, conn=8) #conn used to be 4 here
+        struct = np.ones((3,3))
+        L, N = ndimage.label(bw, structure = struct)
+        #set border to 1
+        nI = np.zeros(I.shape)
+        nI[:, np.r_[0, nI.shape[1]-1]] = 1 #hopefully this is correct indexing
+        nI[np.r_[0, nI.shape[0]-1], :] = 1
+        nL = L * nI
+        uL = np.unique(nL)
+        for i in range(0, uL.size): #this is a little redundant, does same as bwareaopen, as a double check after we remove the outside boundary.
+            ii = L==uL[i]
+            areaVal = np.sum(ii)
+            if areaVal < minArea:
+                L[ii] = 0
+        return L
+    
+    @staticmethod
+    def imfill(img):
+        """
+        similar to matlab imfill('holes')
+        flood fill holes in binary image that are separate from the border. 
+        algo:
+        padd outer borders to ensure flooding from corner goes all around
+        flood from border, invert
+        combine inverted flooded with binary map (OR operation)
+        
+        img should be binary map 
+        """
+        rows, cols = img.shape
+        tmp = np.zeros((rows+2, cols+2))
+        tmp[1:-1, 1:-1] = img #make a copy of img padded on all sides by zeros
+        flooded = seg.flood_fill(tmp, (0,0), 1, in_place=True) #default is already full connectivity including diagonals as desired.
+        inverted = flooded*(-1) + 1
+        inverted = inverted[1:-1, 1:-1] #get rid of padding
+        return np.logical_or(img, inverted) #works!
+    
+    @staticmethod
+    def imextendedmax(self, img, H):
+        """
+        pick out regional maxima of H maxima transform
+
+        analog to imextendedmaxima function from matlab
+        """
+        foot = np.ones((3,3))
+        h_maxed = self.HMAX(img, H)
+        return morph.local_maxima(h_maxed, footprint=foot, allow_borders=True)
+
+    @staticmethod
+    def HMAX(f, h):
+        """
+        H-maxima transform (reconstruction by dilation of image, using (image - H) as the seed/marker)
+        """
+        img = f.copy().astype(np.float64)
+        seed = img - h
+        seed[seed<0] = 0
+        return morph.reconstruction(seed, img, method='dilation')
+    
+    @staticmethod
+    def imimposemin(img, minima):
+        """
+        assume integer img values starting at 0
+        """
+        marker = np.full(img.shape, np.inf)
+        marker[minima == 1] = 0
+        mask = np.minimum((img + 1), marker)
+        return morph.reconstruction(marker, mask, method='erosion')
+    
+    @staticmethod
+    def imcomplement(image):
+        """Equivalent to matlabs imcomplement function"""
+        if image.dtype == 'float64':
+            max_type_val = 1
+        else:
+            max_type_val = np.finfo(image.dtype).max
+        return max_type_val - image
+    
+    @staticmethod
+    def watershed(img):
+        """
+        img should be the distance transform already flipped to be "deep" where objects are
+        """
+        # coords = peak_local_max((-img), footprint=np.ones((3,3)))
+        struct = np.ones((3,3)) #structure was 3,3
+        dilated = cv.dilate(-img, struct)
+        mask = ((-img) >= dilated).astype('uint8') #both used to be -img
+        # # mask = np.zeros(img.shape, dtype=bool)
+        # # mask[tuple(coords.T)] = True
+        markers, ret = ndimage.label(mask)
+        return seg.watershed(img, markers=markers, watershed_line=True)
+    
+    @staticmethod
+    def removeBorderObjects(self, L, dis):
+        """
+        remove objects touching border of image
+        """
+        borderimage = np.zeros(L.shape)
+        borderimage[:, :dis] = 1
+        borderimage[:, -dis:] = 1
+        borderimage[:dis, :] = 1
+        borderimage[-dis:, :] = 1
+        L2 = borderimage * L
+        uL = np.unique(L2)
+        for borderL in uL:
+            L[L == borderL] = 0
+        L = self.resetLabelImage(L)
+        return L
+    
+    @staticmethod
+    def resetLabelImage(L):
+        """
+        rename labels in a labelled image from 1 to # of labels
+        """
+        uL = np.unique(L)
+        uL = uL[uL > 0] #remove background
+        for i, label in enumerate(uL):
+            ii = (L == label)
+            L[ii] = i+1
+        return L.astype('uint8')
+    
+    @staticmethod
+    def regionprops(watershed_img, final_im, IM11):
+        """
+        regionprops:
+        area of each labelled region
+        mean intensity of final_im in each labelled region
+        mean intensity of entropy_filter on IM11 in each labelled region
+        """
+        labels = np.unique(watershed_img)
+        if labels[0] == 0:
+            labels = labels[1:]
+        areas = np.zeros(labels.shape)
+        final_im_intensities = np.zeros(labels.shape)
+        entropy = np.zeros(labels.shape)
+        ent = filters.rank.entropy(IM11, footprint=np.ones((5,5)))
+        for i, label in enumerate(labels):
+            areas[i] = np.sum((watershed_img == label))
+            final_im_intensities[i] = np.mean(final_im[watershed_img == label])
+            entropy[i] = np.mean(ent[watershed_img == label])
+        return labels, areas, final_im_intensities, entropy
+    
+    @staticmethod
     def getImageThreshold(IM):
         maxBins = 256
         freq, binEdges = np.histogram(IM.flatten(), bins=maxBins)
@@ -66,6 +282,109 @@ class SegmentationFunctions:
         imThreshold = binCenters[imThreshold] + meanIntensity
         return imThreshold
 
+    @staticmethod
+    def getfsimage(self, imdata, channel):
+        """
+        % getfsimage - Outputs best focussed image from a set of 3D image slices
+        % Input:
+        % imdata: metadata for a single image id
+        % channel: segmentation channel column header
+        % Output:
+        % final_image: Best focussed image
+        """
+        zVals = np.unique(imdata['Stack'])
+        #want to end up with fnames == images from single channel being read in stack order.
+        imInfo = self.imfinfo( imdata.loc[imdata['Stack']==zVals[0], channel].values[0])
+        prevImage = np.full((imInfo.Height, imInfo.Width), -1*np.inf)
+        focusIndex = np.zeros((imInfo.Height, imInfo.Width))
+        finalImage = np.zeros((imInfo.Height, imInfo.Width))
+        for z in zVals:
+            IM = io.imread(imdata.loc[imdata['Stack']==z, channel].values[0]).astype(np.float64)
+            imtmp = self.stdfilt(IM, kernel_size=5)
+            xgrad = ndimage.sobel(imtmp, axis=0) #directional gradients
+            ygrad = ndimage.sobel(imtmp, axis=1)
+            tmp = np.sqrt( (xgrad*xgrad) + (ygrad*ygrad) ) #gradient magnitude
+            ii = (tmp >= prevImage)
+            focusIndex[ii] = z
+            finalImage[ii] = IM[ii]
+            prevImage = np.maximum(tmp, prevImage)
+        return finalImage, focusIndex
+    
+    @staticmethod
+    def getfsimage_multichannel(self, imdata, allChannels):
+        """
+        % getfsimage - Outputs best focussed image from a set of 3D image slices (using multichannel max intensity.)
+        % Input:
+        % imdata: metadata for a single image id
+        % Output:
+        % final_image: Best focused image
+        """
+        zVals = np.unique(imdata['Stack'])
+        #want to end up with fnames == images from single channel being read in stack order.
+        imInfo = self.imfinfo( imdata.loc[imdata['Stack']==zVals[0], allChannels[0]].values[0])
+        prevImage = np.full((imInfo.Height, imInfo.Width), -1*np.inf)
+        focusIndex = np.zeros((imInfo.Height, imInfo.Width))
+        finalImage = np.zeros((imInfo.Height, imInfo.Width))
+        for z in zVals:
+            for i in range(len(allChannels)):
+                if i == 0:
+                    IM = io.imread(imdata.loc[imdata['Stack']==z, allChannels[i]].values[0]).astype(np.float64)
+                else:
+                    IM = np.maximum(IM, io.imread(imdata.loc[imdata['Stack']==z, allChannels[i]].values[0]).astype(np.float64))
+            imtmp = self.stdfilt(IM, kernel_size=5)
+            xgrad = ndimage.sobel(imtmp, axis=0) #directional gradients
+            ygrad = ndimage.sobel(imtmp, axis=1)
+            tmp = np.sqrt( (xgrad*xgrad) + (ygrad*ygrad) ) #gradient magnitude
+            ii = (tmp >= prevImage)
+            focusIndex[ii] = z
+            finalImage[ii] = IM[ii]
+            prevImage = np.maximum(tmp, prevImage)
+        return finalImage, focusIndex
+
+    @staticmethod
+    def getSegmentedOverlayImage(self, final_im, pdict):
+        #min_area_spheroid, radius_spheroid, smoothin_param, entropy_thresh, intensity_threshold, scale_spheroid):
+        # newfim = final_im.copy()
+        SE = morph.disk(2*pdict['radius_spheroid'])
+        IM2 = cv.morphologyEx(final_im.astype('uint16'), cv.MORPH_TOPHAT, SE).astype('float64')
+        IM4 = self.smoothImage(IM2, pdict['smoothin_param'])
+        minIM = np.min(IM4)
+        maxIM = np.max(IM4)
+        IM4 = (IM4 - minIM)/(maxIM - minIM) #rescale 0-1
+        IM4 = self.imadjust(IM4, gamma=0.5)
+        # #im4 is float image from 0 to 1
+        IM6 = self.segmentImage(IM4, pdict['min_area_spheroid'])
+        IM6 = (IM6 > 0).astype('uint8')
+        IM6 = cv.morphologyEx(IM6, cv.MORPH_CLOSE, np.ones((3,3))) #this operation is iterated 3 times in matlab script. No reason to do this because morphological closing is idempotent.
+        IM6 = self.imfill(IM6)
+        IM6 = self.bwareaopen(IM6, 20) #open sets of connected components with less than 20 members 
+        #im6 is binary image
+        IM7 = ndimage.distance_transform_edt(IM6)# matlab bwdist gives euclidean distance transform from non-zero elements. use on binary inverse of IM6 so distance transform from zero-elements. ndimage.distance_transform_edt is already distance from zero elements
+        #im7 is float image
+        if scale_spheroid > 1:
+            scale_spheroid = 1
+        elif scale_spheroid <= 0:
+            scale_spheroid = 0.1
+        splitFactor = scale_spheroid * pdict['radius_spheroid']
+        IM9 = self.imextendedmax(IM7, splitFactor)
+        bw = np.logical_or(np.logical_not(IM6), IM9)
+        IM10 = self.imimposemin(self.imcomplement(IM4*IM7),bw)
+        L = self.watershed(IM10)
+        L = np.maximum(L-1, 0) #bacground label is 1, so replace with 0.
+        # L -= 1 #this replaces the line above, assumes background is labelled 1.
+        L = self.removeBorderObjects(L, 30) #used to be 10.
+        IM11 = (final_im - np.min(final_im)) / (np.max(final_im) - np.min(final_im))
+        labels, areas, final_im_means, entropies = self.regionprops(L, final_im, IM11)
+        # return L, labels, areas, final_im_means, entropies
+        if np.sum(areas) != 0:
+            i2 = areas >= pdict['min_area_spheroid']
+            i3 = final_im_means >= pdict['intensity_threshold']
+            i4 = entropies >= pdict['entropy_thresh']
+            ii = ((i2*i3*i4) == 0) #ii is True at the indices of all the labels that we want to discard
+            for l in labels[np.nonzero(ii)]:
+                L[L==l] = 0
+        L = self.resetLabelImage(L)
+        return L 
 
 
 # end SegmentationFunctions

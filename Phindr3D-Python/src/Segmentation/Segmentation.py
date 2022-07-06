@@ -16,7 +16,9 @@
 
 
 from .SegmentationFunctions import *
+import os
 import json
+import numpy as np
 import pandas as pd
 
 class Segmentation:
@@ -37,6 +39,9 @@ class Segmentation:
             }
         self.settings = self.defaultSettings
         self.metadata = None
+        self.outputDir = None
+        self.labDir = None
+        self.segDir = None
     
     def saveSettings(self, outputpath):
         with open(outputpath, 'w', encoding='utf-8') as f:
@@ -46,9 +51,12 @@ class Segmentation:
         with open(settingJsonPath, 'r') as f:
             newsettings = json.load(f)
         self.settings = newsettings
-
     
-
+    def createSubfolders(self):
+        self.labDir = os.path.join(self.outputDir, 'LabelledImages')
+        self.segDir = os.path.join(self.outputDir, 'SegmentedImages')
+        os.makedirs(self.labDir, exist_ok=True)
+        os.makedirs(self.segDir, exist_ok=True)
 
     # end constructor
 
@@ -61,7 +69,6 @@ class Segmentation:
 
 if __name__ == '__main__':
     """Tests of the Segmentation class that can be run directly."""
-
 
 
 # end main
