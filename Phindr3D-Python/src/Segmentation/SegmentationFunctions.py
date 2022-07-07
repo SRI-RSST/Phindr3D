@@ -104,7 +104,7 @@ def bwareaopen(img, num, conn=8):
             img[labelled == label] = 0 
     return img
 
-def segmentImage(self, I, minArea):
+def segmentImage(I, minArea):
     imthreshold = getImageThreshold(I.astype(np.float64))
     bw = bwareaopen(I>imthreshold, minArea, conn=8) #conn used to be 4 here
     struct = np.ones((3,3))
@@ -141,7 +141,7 @@ def imfill(img):
     inverted = inverted[1:-1, 1:-1] #get rid of padding
     return np.logical_or(img, inverted) #works!
 
-def imextendedmax(self, img, H):
+def imextendedmax(img, H):
     """
     pick out regional maxima of H maxima transform
 
@@ -190,7 +190,7 @@ def watershed(img):
     markers, ret = ndimage.label(mask)
     return seg.watershed(img, markers=markers, watershed_line=True)
 
-def removeBorderObjects(self, L, dis):
+def removeBorderObjects(L, dis):
     """
     remove objects touching border of image
     """
@@ -336,11 +336,11 @@ def getSegmentedOverlayImage(final_im, pdict):
     #im6 is binary image
     IM7 = ndimage.distance_transform_edt(IM6)# matlab bwdist gives euclidean distance transform from non-zero elements. use on binary inverse of IM6 so distance transform from zero-elements. ndimage.distance_transform_edt is already distance from zero elements
     #im7 is float image
-    if scale_spheroid > 1:
-        scale_spheroid = 1
-    elif scale_spheroid <= 0:
-        scale_spheroid = 0.1
-    splitFactor = scale_spheroid * pdict['radius_spheroid']
+    if pdict['scale_spheroid'] > 1:
+        pdict['scale_spheroid'] = 1
+    elif pdict['scale_spheroid'] <= 0:
+        pdict['scale_spheroid'] = 0.1
+    splitFactor = pdict['scale_spheroid'] * pdict['radius_spheroid']
     IM9 = imextendedmax(IM7, splitFactor)
     bw = np.logical_or(np.logical_not(IM6), IM9)
     IM10 = imimposemin(imcomplement(IM4*IM7),bw)
@@ -353,7 +353,7 @@ def getSegmentedOverlayImage(final_im, pdict):
     if np.sum(areas) != 0:
         i2 = areas >= pdict['min_area_spheroid']
         i3 = final_im_means >= pdict['intensity_threshold']
-        i4 = entropies >= pdict['entropy_thresh']
+        i4 = entropies >= pdict['entropy_threshold']
         ii = ((i2*i3*i4) == 0) #ii is True at the indices of all the labels that we want to discard
         for l in labels[np.nonzero(ii)]:
             L[L==l] = 0
@@ -392,5 +392,3 @@ def getFocusplanesPerObjectMod(labelImage, fIndex, numZ=None):
     return ll #want ll to be zplane values, corresponding to fIndex values.
 
 # end SegmentationFunctions
-
-

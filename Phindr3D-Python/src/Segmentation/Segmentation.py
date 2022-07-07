@@ -81,9 +81,15 @@ class Segmentation:
                     ll.append( getFocusplanesPerObjectMod(nL, focusIndex) )
             ll = np.array(ll)
             numObjects = len(ll)
+
+            zVals = list(imstack.stackLayers.keys())
+            channels = list(imstack.stackLayers[zVals[0]].channels.keys())
+            otherparams = imstack.stackLayers[zVals[0]].otherparams
+            filenameParts = []
+            for param in otherparams:
+                part = f'{param[0]}{otherparams[param]}'
+                filenameParts.append(part)
             if numObjects > 0:
-                zVals = list(imstack.stackLayers.keys())
-                channels = list(imstack.stackLayers[zVals[0]].channels.keys())
                 SEdil = morph.disk(25) # this structuring element can be made larger if needed.
                 L = cv.dilate(L, SEdil)
                 fstruct = ndimage.find_objects(L.astype(int))
@@ -92,37 +98,27 @@ class Segmentation:
                         for chan in channels:
                             IM1 = io.imread( imstack.stackLayers[iPlanes].channels[chan].channelpath )
                             IM2 = IM1[fstruct[iObjects]]
-                            filenameParts = []
-                            for dfcol in filenameData:
-                                part = f'{dfcol[0]}{imageData.loc[imageData["Stack"]==zVals[0], dfcol].values[0]}'
-                                filenameParts.append(part)
-                            filenameParts.append(f'Z{iPlanes}')
-                            filenameParts.append(f'CH{kChannels+1}')
-                            filenameParts.append(f'ID{id}')
-                            filenameParts.append(f'OB{iObjects+1}')
-                            obFileName = '__'.join(filenameParts)
+                            tmpparts = filenameParts.copy()
+                            tmpparts.append(f'Z{iPlanes}')
+                            tmpparts.append(f'CH{chan}')
+                            tmpparts.append(f'ID{id}')
+                            tmpparts.append(f'OB{iObjects+1}')
+                            obFileName = '__'.join(tmpparts)
                             obFileName = obFileName + '.tiff'
                             tf.imwrite(os.path.join(self.segDir, obFileName), IM2)
-                    filenameParts = []
-                    for dfcol in filenameData:
-                        part = f'{dfcol[0]}{imageData.loc[imageData["Stack"]==zVals[0], dfcol].values[0]}'
-                        filenameParts.append(part)
-                    filenameParts.append('Z1')
-                    filenameParts.append(f'CH{kChannels+1}')
-                    filenameParts.append(f'ID{id}')
-                    filenameParts.append(f'OB{iObjects+1}')
-                    obFileName = '__'.join(filenameParts)
+                    tmpparts = filenameParts.copy()
+                    tmpparts.append(f'ID{id}')
+                    tmpparts.append(f'OB{iObjects+1}')
+                    obFileName = '__'.join(tmpparts)
                     obFileName = obFileName + '.tiff'
                     IML = L[fstruct[iObjects]]
                     tf.imwrite(os.path.join(self.labDir, obFileName), IML)
-            filenameParts = []
-            for dfcol in filenameData:
-                part = f'{dfcol[0]}{imageData.loc[imageData["Stack"]==zVals[0], dfcol].values[0]}'
-                filenameParts.append(part)
-            filenameParts.append(f'ID{id}')
             allobsname = filenameParts.copy()
             focusname = filenameParts.copy()
+            allobsname.append(f'ID{id}')
+            focusname.append(f'ID{id}')
             allobsname.append(f'All_{numObjects}_Objects')
+            focusname.append('FocusIM')
             obFileName = '__'.join(allobsname) + '.tiff'
             focusname = '__'.join(focusname) + '.tiff'
             IML = L
@@ -130,10 +126,7 @@ class Segmentation:
             tf.imwrite(os.path.join(self.labDir, focusname), IM)
 
 
-
-        else:
-            pass
-            #nothing here yet, need to add channel selection option.
+    # End RunSegmentation
 
 
 

@@ -37,7 +37,7 @@ class segmentationWindow(QDialog):
         nextimage = QPushButton("Next Image")
         previmage = QPushButton("Previous Image")
 
-        #labels:
+        # labels
         selectlabel = QLabel('Metadata File')
         outlabel = QLabel('Ouput Directory')
 
@@ -135,6 +135,7 @@ class segmentationWindow(QDialog):
             newdialog.setFixedSize(newdialog.minimumSizeHint())
             newdialog.show()
             newdialog.exec()
+        # End setSegmentationSettings
         
         def loadMetadata(self, loadbutton):
             filename, dump = QFileDialog.getOpenFileName(self, 'Select Metadata File', '', 'Text files (*.txt)')
@@ -160,6 +161,7 @@ class segmentationWindow(QDialog):
                 load_metadata_win = self.buildErrorWindow("Select Valid Metadata File (.txt)", QMessageBox.Critical)
                 load_metadata_win.show()
                 load_metadata_win.exec()
+        # End loadMetadata
 
         def setOutputPath(self, outputbutton):
             dirname = QFileDialog.getExistingDirectory(self, 'Select Segmentation Output Directory')
@@ -174,17 +176,37 @@ class segmentationWindow(QDialog):
             else:
                 alert = self.buildErrorWindow("Select Valid Directory.", QMessageBox.Critical)
                 alert.exec()
+        # End setOutputPath
+        
+        def showSegmentation(self):
+            return None
+        # End showSegmentation
+
+        def nextimageClicked(self):
+            return None
+        # End nextimageClicked
+
+        def previmageClicked(self):
+            return None
+        # End previmageClicked
         
         def segmentImages(self):
             if not self.metadata.metadataLoadSuccess:
                 loadMetadata(self, selectmetadata)
+                if not self.metadata.metadataLoadSuccess:
+                    return None
             if self.segmentation.outputDir == None:
                 setOutputPath(self, outputpath)
+                if self.segmentation.outputDir == None:
+                    return None
+            alert = self.buildErrorWindow('Start Segmentation?', QMessageBox.Critical)
+            alert.exec()
             self.segmentation.createSubfolders()
             self.segmentation.RunSegmentation(self.metadata)
-            
-            #do some stuff
-            print('Yep, I("segment") was definitely clicked.')
+            self.showSegmentation()   
+            alert = self.buildErrorWindow('Segmentation Completed.', QMessageBox.Critical)
+            alert.exec()      
+        # End segment Images   
 
         selectmetadata.clicked.connect(lambda: loadMetadata(self, selectmetadata))
         outputpath.clicked.connect(lambda: setOutputPath(self, outputpath))
@@ -216,3 +238,5 @@ class segmentationWindow(QDialog):
         alert.setText(errormessage)
         alert.setIcon(icon)
         return alert
+
+# End segmentationWindow class
