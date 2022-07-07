@@ -137,7 +137,7 @@ class segmentationWindow(QDialog):
             newdialog.exec()
         
         def loadMetadata(self, loadbutton):
-            filename, dump = QFileDialog.getOpenFileName(self, 'Open File', '', 'Text files (*.txt)')
+            filename, dump = QFileDialog.getOpenFileName(self, 'Select Metadata File', '', 'Text files (*.txt)')
             if os.path.exists(filename):
                 # When meta data is loaded, using the loaded data, change the data for image viewing
                 # Consider adding another class to store all of the data (GUIDATA in MATLab?)
@@ -162,7 +162,7 @@ class segmentationWindow(QDialog):
                 load_metadata_win.exec()
 
         def setOutputPath(self, outputbutton):
-            dirname = QFileDialog.getExistingDirectory(self, )
+            dirname = QFileDialog.getExistingDirectory(self, 'Select Segmentation Output Directory')
             if os.path.exists(dirname):
                 self.outdir = dirname
                 if len(dirname) > 25:
@@ -176,8 +176,10 @@ class segmentationWindow(QDialog):
                 alert.exec()
         
         def segmentImages(self):
+            if not self.metadata.metadataLoadSuccess:
+                loadMetadata(self, selectmetadata)
             if self.segmentation.outputDir == None:
-                self.setOutputPath(self, outputpath)
+                setOutputPath(self, outputpath)
             self.segmentation.createSubfolders()
             self.segmentation.RunSegmentation(self.metadata)
             
