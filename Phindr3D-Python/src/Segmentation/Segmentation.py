@@ -44,6 +44,11 @@ class Segmentation:
         self.outputDir = None
         self.labDir = None
         self.segDir = None
+        self.segmentationSuccess = False
+        self.focusIms = {} #key = image ID, val = imagepath
+        self.labelIms = {} #same same.
+        self.allIDs = [] 
+        self.IDidx = None
         # end constructor
     
     def saveSettings(self, outputpath):
@@ -60,71 +65,109 @@ class Segmentation:
         self.segDir = os.path.join(self.outputDir, 'SegmentedImages')
         os.makedirs(self.labDir, exist_ok=True)
         os.makedirs(self.segDir, exist_ok=True)
+    
+    def getCurrentIMs(self):
+        print(self.focusIms[self.allIDs[self.IDidx]]) ###########################
+        print(self.labelIms[self.allIDs[self.IDidx]])
+        if self.allIDs == []:
+            return None, None
+        else:
+            return tf.imread(self.focusIms[self.allIDs[self.IDidx]]), tf.imread(self.labelIms[self.allIDs[self.IDidx]])
+    
+    def getNextIMs(self):
+        if self.allIDs == []:
+            return None, None
+        else:
+            if self.IDidx == len(self.allIDs)-1:
+                self.IDidx = 0
+            else:
+                self.IDidx += 1
+            return tf.imread(self.focusIms[self.allIDs[self.IDidx]]), tf.imread(self.labelIms[self.allIDs[self.IDidx]])
+
+    def getPrevIMs(self):
+        if self.allIDs == []:
+            return None, None
+        else:
+            if self.IDidx == 0:
+                self.IDidx = len(self.allIDs)-1
+            else:
+                self.IDidx -= 1
+            return tf.imread(self.focusIms[self.allIDs[self.IDidx]]), tf.imread(self.labelIms[self.allIDs[self.IDidx]])
 
     def RunSegmentation(self, mdata):
-        for id in mdata.images:
-            imstack = mdata.images[id]
-            if self.settings['seg_Channel'] == 'allChannels':
-                IM, focusIndex = getfsimage_multichannel(imstack)
-            else:
-                IM, focusIndex = getfsimage(imstack, self.settings['seg_channel'])
-            L = getSegmentedOverlayImage(IM, self.settings)
-            uLabels = np.unique(L)
-            uLabels = uLabels[uLabels != 0]
-            numObjects = len(uLabels)
-            ll = []
-            for iObjects in range(numObjects):
-                nL = (L == uLabels[iObjects]) #nL is a binary map
-                if np.sum(nL) > (L.size * self.settings['max_img_fraction']):
-                    L[L == uLabels[iObjects]] = 0
+        import matplotlib.pyplot as plt
+        try: 
+            for id in mdata.images:
+                imstack = mdata.images[id]
+                if self.settings['seg_Channel'] == 'allChannels':
+                    IM, focusIndex = getfsimage_multichannel(imstack)
                 else:
-                    ll.append( getFocusplanesPerObjectMod(nL, focusIndex) )
-            ll = np.array(ll)
-            numObjects = len(ll)
-
-            zVals = list(imstack.stackLayers.keys())
-            channels = list(imstack.stackLayers[zVals[0]].channels.keys())
-            otherparams = imstack.stackLayers[zVals[0]].otherparams
-            filenameParts = []
-            for param in otherparams:
-                part = f'{param[0]}{otherparams[param]}'
-                filenameParts.append(part)
-            if numObjects > 0:
-                SEdil = morph.disk(25) # this structuring element can be made larger if needed.
-                L = cv.dilate(L, SEdil)
-                fstruct = ndimage.find_objects(L.astype(int))
+                    IM, focusIndex = getfsimage(imstack, self.settings['seg_channel'])
+                L = getSegmentedOverlayImage(IM, self.settings)
+                uLabels = np.unique(L)
+                uLabels = uLabels[uLabels != 0]
+                numObjects = len(uLabels)
+                ll = []
                 for iObjects in range(numObjects):
-                    for iPlanes in range(int(ll[iObjects, 0]), int(ll[iObjects, 1]+1)):
-                        for chan in channels:
-                            IM1 = io.imread( imstack.stackLayers[iPlanes].channels[chan].channelpath )
-                            IM2 = IM1[fstruct[iObjects]]
-                            tmpparts = filenameParts.copy()
-                            tmpparts.append(f'Z{iPlanes}')
-                            tmpparts.append(f'CH{chan}')
-                            tmpparts.append(f'ID{id}')
-                            tmpparts.append(f'OB{iObjects+1}')
-                            obFileName = '__'.join(tmpparts)
-                            obFileName = obFileName + '.tiff'
-                            tf.imwrite(os.path.join(self.segDir, obFileName), IM2)
-                    tmpparts = filenameParts.copy()
-                    tmpparts.append(f'ID{id}')
-                    tmpparts.append(f'OB{iObjects+1}')
-                    obFileName = '__'.join(tmpparts)
-                    obFileName = obFileName + '.tiff'
-                    IML = L[fstruct[iObjects]]
-                    tf.imwrite(os.path.join(self.labDir, obFileName), IML)
-            allobsname = filenameParts.copy()
-            focusname = filenameParts.copy()
-            allobsname.append(f'ID{id}')
-            focusname.append(f'ID{id}')
-            allobsname.append(f'All_{numObjects}_Objects')
-            focusname.append('FocusIM')
-            obFileName = '__'.join(allobsname) + '.tiff'
-            focusname = '__'.join(focusname) + '.tiff'
-            IML = L
-            tf.imwrite(os.path.join(self.labDir, obFileName), IML)
-            tf.imwrite(os.path.join(self.labDir, focusname), IM)
+                    nL = (L == uLabels[iObjects]) #nL is a binary map
+                    if np.sum(nL) > (L.size * self.settings['max_img_fraction']):
+                        L[L == uLabels[iObjects]] = 0
+                    else:
+                        ll.append( getFocusplanesPerObjectMod(nL, focusIndex) )
+                ll = np.array(ll)
+                numObjects = len(ll)
 
+                zVals = list(imstack.stackLayers.keys())
+                channels = list(imstack.stackLayers[zVals[0]].channels.keys())
+                otherparams = imstack.stackLayers[zVals[0]].otherparams
+                filenameParts = []
+                for param in otherparams:
+                    part = f'{param[0]}{otherparams[param]}'
+                    filenameParts.append(part)
+                if numObjects > 0:
+                    SEdil = morph.disk(25) # this structuring element can be made larger if needed.
+                    L = cv.dilate(L, SEdil)
+                    fstruct = ndimage.find_objects(L.astype(int))
+                    for iObjects in range(numObjects):
+                        for iPlanes in range(int(ll[iObjects, 0]), int(ll[iObjects, 1]+1)):
+                            for chan in channels:
+                                IM1 = io.imread( imstack.stackLayers[iPlanes].channels[chan].channelpath )
+                                IM2 = IM1[fstruct[iObjects]]
+                                tmpparts = filenameParts.copy()
+                                tmpparts.append(f'Z{iPlanes}')
+                                tmpparts.append(f'CH{chan}')
+                                tmpparts.append(f'ID{id}')
+                                tmpparts.append(f'OB{iObjects+1}')
+                                obFileName = '__'.join(tmpparts)
+                                obFileName = obFileName + '.tiff'
+                                tf.imwrite(os.path.join(self.segDir, obFileName), IM2)
+                        tmpparts = filenameParts.copy()
+                        tmpparts.append(f'ID{id}')
+                        tmpparts.append(f'OB{iObjects+1}')
+                        obFileName = '__'.join(tmpparts)
+                        obFileName = obFileName + '.tiff'
+                        IML = L[fstruct[iObjects]]
+                        tf.imwrite(os.path.join(self.labDir, obFileName), IML)
+                allobsname = filenameParts.copy()
+                focusname = filenameParts.copy()
+                allobsname.append(f'ID{id}')
+                focusname.append(f'ID{id}')
+                allobsname.append(f'All_{numObjects}_Objects')
+                focusname.append('FocusIM')
+                objFileName = os.path.join(self.labDir, ('__'.join(allobsname) + '.tiff'))
+                focFileName = os.path.join(self.labDir, ('__'.join(focusname) + '.tiff'))
+                IML = L
+                tf.imwrite(objFileName, IML)
+                tf.imwrite(focFileName, IM)
+                self.focusIms[id] = focFileName
+                self.labelIms[id] = objFileName
+            self.allIDs = list(self.focusIms.keys())
+            self.IDidx = 0
+            self.segmentationSuccess = True
+        except:
+            self.allIDs = []
+            self.IDidx = None
+            self.segmentationSuccess = False
 
     # End RunSegmentation
 

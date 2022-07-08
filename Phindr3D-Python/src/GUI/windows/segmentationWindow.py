@@ -19,6 +19,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Data import *
 from Segmentation import *
+from .helperclasses import *
 
 class segmentationWindow(QDialog):
     def __init__(self):
@@ -28,6 +29,8 @@ class segmentationWindow(QDialog):
         self.metadata = Metadata()
         self.outdir = None
         self.segmentation = Segmentation()
+        self.labelIM = None #numpy array or None
+        self.focusIM = None #also numpy array or None
 
         # buttons
         selectmetadata = QPushButton("Select Metadata File")
@@ -35,11 +38,25 @@ class segmentationWindow(QDialog):
         outputpath = QPushButton("Set output path")
         segment = QPushButton("Segment")
         nextimage = QPushButton("Next Image")
-        previmage = QPushButton("Previous Image")
+        previmage = QPushButton("Prev Image")
 
         # labels
         selectlabel = QLabel('Metadata File')
         outlabel = QLabel('Ouput Directory')
+    
+        # image boxes
+        focusbox = QGroupBox("Focus Image")
+        focuslayout = QVBoxLayout()
+        focusplot = MplCanvas(self, width=2, height=2, dpi=100, projection='2d')
+        focusplot.setNearFull()
+        focuslayout.addWidget(focusplot)
+        focusbox.setLayout(focuslayout)
+        segmentbox = QGroupBox("Segmentation Map")
+        segmentlayout = QVBoxLayout()
+        segmentplot = MplCanvas(self, width=2, height=2, dpi=100, projection='2d')
+        segmentplot.setNearFull()
+        segmentlayout.addWidget(segmentplot)
+        segmentbox.setLayout(segmentlayout)
 
         # button functions
         def setSegmentationSettings(self):
@@ -140,8 +157,6 @@ class segmentationWindow(QDialog):
         def loadMetadata(self, loadbutton):
             filename, dump = QFileDialog.getOpenFileName(self, 'Select Metadata File', '', 'Text files (*.txt)')
             if os.path.exists(filename):
-                # When meta data is loaded, using the loaded data, change the data for image viewing
-                # Consider adding another class to store all of the data (GUIDATA in MATLab?)
                 try:
                     self.metadata.loadMetadataFile(filename)
                     loadbutton.setToolTip(filename)
@@ -179,15 +194,28 @@ class segmentationWindow(QDialog):
         # End setOutputPath
         
         def showSegmentation(self):
-            return None
+            if self.focusIM is None or self.labelIM is None:
+                pass
+            else:
+                #stuff from helperclasses here since I want to display the images.
+                segmentplot.axes.clear()
+                segmentplot.axes.imshow(self.labelIM, 'tab10')
+                segmentplot.axes.set_axis_off()
+                segmentplot.draw()
+                focusplot.axes.clear()
+                focusplot.axes.imshow(self.focusIM, 'gray')
+                focusplot.axes.set_axis_off()
+                focusplot.draw()
         # End showSegmentation
 
         def nextimageClicked(self):
-            return None
+            self.focusIM, self.labelIM = self.segmentation.getNextIMs()
+            showSegmentation(self)
         # End nextimageClicked
 
         def previmageClicked(self):
-            return None
+            self.focusIM, self.labelIM = self.segmentation.getPrevIMs()
+            showSegmentation(self)
         # End previmageClicked
         
         def segmentImages(self):
@@ -199,26 +227,26 @@ class segmentationWindow(QDialog):
                 setOutputPath(self, outputpath)
                 if self.segmentation.outputDir == None:
                     return None
-            alert = self.buildErrorWindow('Start Segmentation?', QMessageBox.Critical)
+            alert = self.buildErrorWindow('Start Segmentation?', QMessageBox.Information)
             alert.exec()
             self.segmentation.createSubfolders()
             self.segmentation.RunSegmentation(self.metadata)
-            self.showSegmentation()   
-            alert = self.buildErrorWindow('Segmentation Completed.', QMessageBox.Critical)
-            alert.exec()      
+            if self.segmentation.segmentationSuccess:
+                alert = self.buildErrorWindow('Segmentation Completed.', QMessageBox.Information)
+                alert.exec()
+                self.focusIM, self.labelIM = self.segmentation.getCurrentIMs()
+                showSegmentation(self)   
+            else:
+                alert = self.buildErrorWindow('Segmentation Failed.', QMessageBox.Critical)
+                alert.exec()
         # End segment Images   
 
         selectmetadata.clicked.connect(lambda: loadMetadata(self, selectmetadata))
         outputpath.clicked.connect(lambda: setOutputPath(self, outputpath))
         segmentationsettings.clicked.connect(lambda: setSegmentationSettings(self))
         segment.clicked.connect(lambda: segmentImages(self))
-
-        # image boxes
-        focusimage = QGroupBox("Focus Image")
-        segmentmap = QGroupBox("Segmentation Map")
-        #image boxes should show the images in the labelled images section
-        #also need to save the max-intensity images during segmentation to show.
-        # put images here
+        nextimage.clicked.connect(lambda: nextimageClicked(self))
+        previmage.clicked.connect(lambda: previmageClicked(self))
 
         # add everything to layout
         self.layout().addWidget(selectlabel, 0, 0)
@@ -227,10 +255,11 @@ class segmentationWindow(QDialog):
         self.layout().addWidget(outputpath, 3, 0)
         self.layout().addWidget(segmentationsettings, 4, 0)
         self.layout().addWidget(segment, 5, 0)
-        self.layout().addWidget(focusimage, 0, 1, 5, 4)
-        self.layout().addWidget(segmentmap, 0, 5, 5, 4)
-        self.layout().addWidget(previmage, 5, 1)
-        self.layout().addWidget(nextimage, 5, 5)
+        self.layout().addWidget(focusbox, 0, 1, 5, 5)
+        self.layout().addWidget(segmentbox, 0, 6, 5, 5)
+        self.layout().addWidget(previmage, 5, 3, 1, 1)
+        self.layout().addWidget(nextimage, 5, 8, 1, 1)
+
 
     def buildErrorWindow(self, errormessage, icon, errortitle="ErrorDialog"):
         alert = QMessageBox()
