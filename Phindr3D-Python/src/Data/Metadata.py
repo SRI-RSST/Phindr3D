@@ -544,10 +544,7 @@ class Metadata:
 
 
     def getIndividualChannelThreshold(self):
-        """individual channel threshold, called in getImageThresholdValues"""
-
-
-
+        """individual channel threshold"""
 
     # end getIndividualChannelThreshold
 
@@ -578,9 +575,6 @@ class Metadata:
             print(d)
             self.theTileInfo = self.getTileInfo(d, self.theTileInfo)
             print("Well, it didn't crash getting the tile info")
-
-            self.getIndividualChannelThreshold()
-
 
         # remember everything gets rescaled from 0 to 1
         # drop rows containing nan, then take medians for each channel#intensityThresholdValues[ii]
