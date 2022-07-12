@@ -23,11 +23,10 @@ from skimage import filters
 from skimage import morphology as morph
 from skimage import segmentation as seg
 
-"""Static methods for segmentation. Referenced from
+"""Functions for segmentation. Referenced from
 https://github.com/DWALab/Phindr3D/tree/9b95aebbd2a62c41d3c87a36f1122a78a21019c8/Lib
 and
 https://github.com/SRI-RSST/Phindr3D-python/blob/ba588bc925ef72c72103738d17ea922d20771064/phindr_functions.py
-No constructor. All parameters and methods are static.
 """
 def imfinfo(filename):
     class info:
