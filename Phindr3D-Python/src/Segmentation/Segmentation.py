@@ -18,6 +18,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
+from skimage import segmentation
 import tifffile as tf
 from scipy import ndimage
 from .SegmentationFunctions import *
@@ -94,8 +95,7 @@ class Segmentation:
                 self.IDidx -= 1
             return tf.imread(self.focusIms[self.allIDs[self.IDidx]]), tf.imread(self.labelIms[self.allIDs[self.IDidx]])
 
-    def RunSegmentation(self, mdata):
-        import matplotlib.pyplot as plt
+    def RunSegmentation(self, mdata, saveIms=True):
         try: 
             for id in mdata.images:
                 imstack = mdata.images[id]
@@ -140,26 +140,29 @@ class Segmentation:
                                 tmpparts.append(f'OB{iObjects+1}')
                                 obFileName = '__'.join(tmpparts)
                                 obFileName = obFileName + '.tiff'
-                                tf.imwrite(os.path.join(self.segDir, obFileName), IM2)
+                                if saveIms:
+                                    tf.imwrite(os.path.join(self.segDir, obFileName), IM2)
                         tmpparts = filenameParts.copy()
                         tmpparts.append(f'ID{id}')
                         tmpparts.append(f'OB{iObjects+1}')
                         obFileName = '__'.join(tmpparts)
                         obFileName = obFileName + '.tiff'
                         IML = L[fstruct[iObjects]]
-                        tf.imwrite(os.path.join(self.labDir, obFileName), IML)
+                        if saveIms:
+                            tf.imwrite(os.path.join(self.labDir, obFileName), IML)
                 allobsname = filenameParts.copy()
                 focusname = filenameParts.copy()
                 allobsname.append(f'ID{id}')
                 focusname.append(f'ID{id}')
                 allobsname.append(f'All_{numObjects}_Objects')
                 focusname.append('FocusIM')
-                objFileName = os.path.join(self.labDir, ('__'.join(allobsname) + '.tiff'))
-                focFileName = os.path.join(self.labDir, ('__'.join(focusname) + '.tiff'))
                 IML = L
-                tf.imwrite(objFileName, IML)
-                tf.imwrite(focFileName, IM)
-                self.focusIms[id] = focFileName
+                if saveIms:
+                    objFileName = os.path.join(self.labDir, ('__'.join(allobsname) + '.tiff'))
+                    focFileName = os.path.join(self.labDir, ('__'.join(focusname) + '.tiff'))
+                    tf.imwrite(objFileName, IML)
+                    tf.imwrite(focFileName, IM)
+                    self.focusIms[id] = focFileName
                 self.labelIms[id] = objFileName
             self.allIDs = list(self.focusIms.keys())
             self.IDidx = 0
@@ -176,10 +179,15 @@ class Segmentation:
 
 # end class Segmentation
 
-
-
 if __name__ == '__main__':
     """Tests of the Segmentation class that can be run directly."""
-
+    from Data import Metadata
+    mdata = Metadata()
+    segtest = Segmentation()
+    mdatafile = 'testdata\\segmentation_tests\\segtestmdata.txt'
+    mdata.loadMetadataFile(mdatafile)
+    print(f'Loading segmentation test images metadata success? ... {mdata.metadataLoadSuccess}')
+    segtest.RunSegmentation(mdata, saveIms=False)
+    print(f'Segmentation success? ... {segtest.segmentationSuccess}')
 
 # end main
