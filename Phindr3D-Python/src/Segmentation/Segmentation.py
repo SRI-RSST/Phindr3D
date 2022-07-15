@@ -209,3 +209,4 @@ if __name__ == '__main__':
     os.rmdir(segtest.segDir)
     os.rmdir(segtest.labDir)
 # end main
+
