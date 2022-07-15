@@ -17,8 +17,6 @@
 import os
 import json
 import numpy as np
-import pandas as pd
-from skimage import segmentation
 import tifffile as tf
 from scipy import ndimage
 from .SegmentationFunctions import *
@@ -68,8 +66,6 @@ class Segmentation:
         os.makedirs(self.segDir, exist_ok=True)
     
     def getCurrentIMs(self):
-        print(self.focusIms[self.allIDs[self.IDidx]]) ###########################
-        print(self.labelIms[self.allIDs[self.IDidx]])
         if self.allIDs == []:
             return None, None
         else:
