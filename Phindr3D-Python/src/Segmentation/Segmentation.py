@@ -159,7 +159,7 @@ class Segmentation:
                     tf.imwrite(objFileName, IML)
                     tf.imwrite(focFileName, IM)
                     self.focusIms[id] = focFileName
-                self.labelIms[id] = objFileName
+                    self.labelIms[id] = objFileName
             self.allIDs = list(self.focusIms.keys())
             self.IDidx = 0
             self.segmentationSuccess = True
