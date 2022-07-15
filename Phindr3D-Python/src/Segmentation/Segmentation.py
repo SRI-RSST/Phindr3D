@@ -91,7 +91,7 @@ class Segmentation:
                 self.IDidx -= 1
             return tf.imread(self.focusIms[self.allIDs[self.IDidx]]), tf.imread(self.labelIms[self.allIDs[self.IDidx]])
 
-    def RunSegmentation(self, mdata, saveIms=True):
+    def RunSegmentation(self, mdata):
         try: 
             for id in mdata.images:
                 imstack = mdata.images[id]
