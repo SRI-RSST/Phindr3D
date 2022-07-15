@@ -136,16 +136,14 @@ class Segmentation:
                                 tmpparts.append(f'OB{iObjects+1}')
                                 obFileName = '__'.join(tmpparts)
                                 obFileName = obFileName + '.tiff'
-                                if saveIms:
-                                    tf.imwrite(os.path.join(self.segDir, obFileName), IM2)
+                                tf.imwrite(os.path.join(self.segDir, obFileName), IM2)
                         tmpparts = filenameParts.copy()
                         tmpparts.append(f'ID{id}')
                         tmpparts.append(f'OB{iObjects+1}')
                         obFileName = '__'.join(tmpparts)
                         obFileName = obFileName + '.tiff'
                         IML = L[fstruct[iObjects]]
-                        if saveIms:
-                            tf.imwrite(os.path.join(self.labDir, obFileName), IML)
+                        tf.imwrite(os.path.join(self.labDir, obFileName), IML)
                 allobsname = filenameParts.copy()
                 focusname = filenameParts.copy()
                 allobsname.append(f'ID{id}')
@@ -153,13 +151,12 @@ class Segmentation:
                 allobsname.append(f'All_{numObjects}_Objects')
                 focusname.append('FocusIM')
                 IML = L
-                if saveIms:
-                    objFileName = os.path.join(self.labDir, ('__'.join(allobsname) + '.tiff'))
-                    focFileName = os.path.join(self.labDir, ('__'.join(focusname) + '.tiff'))
-                    tf.imwrite(objFileName, IML)
-                    tf.imwrite(focFileName, IM)
-                    self.focusIms[id] = focFileName
-                    self.labelIms[id] = objFileName
+                objFileName = os.path.join(self.labDir, ('__'.join(allobsname) + '.tiff'))
+                focFileName = os.path.join(self.labDir, ('__'.join(focusname) + '.tiff'))
+                tf.imwrite(objFileName, IML)
+                tf.imwrite(focFileName, IM)
+                self.focusIms[id] = focFileName
+                self.labelIms[id] = objFileName
             self.allIDs = list(self.focusIms.keys())
             self.IDidx = 0
             self.segmentationSuccess = True
@@ -178,12 +175,37 @@ class Segmentation:
 if __name__ == '__main__':
     """Tests of the Segmentation class that can be run directly."""
     from Data import Metadata
+    
     mdata = Metadata()
     segtest = Segmentation()
+
+    segtest.outputDir = 'testdata\\segmentation_tests\\check_results'
     mdatafile = 'testdata\\segmentation_tests\\segtestmdata.txt'
+
     mdata.loadMetadataFile(mdatafile)
     print(f'Loading segmentation test images metadata success? ... {mdata.metadataLoadSuccess}')
-    segtest.RunSegmentation(mdata, saveIms=False)
-    print(f'Segmentation success? ... {segtest.segmentationSuccess}')
 
+    segtest.createSubfolders()
+    segtest.RunSegmentation(mdata)
+    print(f'Segmentation success? ... {segtest.segmentationSuccess}')
+    for c, e in zip(os.listdir(segtest.labDir), os.listdir('testdata\\segmentation_tests\\expect_results\\LabelledImages')):
+        check = os.path.abspath(segtest.labDir + '\\' + c)
+        expect = os.path.abspath('testdata\\segmentation_tests\\expect_results\\LabelledImages\\' + e)
+        same = (tf.imread(check) == tf.imread(expect)).all()
+        if not same:
+            break 
+    print(f'Expected label image results? ... {same}')
+    for c, e in zip(os.listdir(segtest.segDir), os.listdir('testdata\\segmentation_tests\\expect_results\\SegmentedImages')):
+        check = os.path.abspath(segtest.segDir + '\\' + c)
+        expect = os.path.abspath('testdata\\segmentation_tests\\expect_results\\SegmentedImages\\' + e)
+        same = (tf.imread(check) == tf.imread(expect)).all()
+        if not same:
+            break
+    print(f'Expected segmented image results? ... {same}')
+    for f in os.listdir(segtest.segDir):
+        os.remove(os.path.abspath(segtest.segDir + '\\' + f))
+    for f in os.listdir(segtest.labDir):
+        os.remove(os.path.abspath(segtest.labDir + '\\' + f))
+    os.rmdir(segtest.segDir)
+    os.rmdir(segtest.labDir)
 # end main
