@@ -28,10 +28,10 @@ import sys
 import random
 
 try:
-    from ..VoxelGrouping.VoxelGrouping import *
+    from ..VoxelGroups.VoxelGroups import *
     from ..Clustering.Clustering import *
 except ImportError:
-    from src.VoxelGrouping.VoxelGrouping import *
+    from src.VoxelGroups.VoxelGroups import *
     from src.Clustering.Clustering import *
 
 class MainGUI(QWidget, external_windows):
@@ -42,7 +42,7 @@ class MainGUI(QWidget, external_windows):
         QMainWindow.__init__(self)
         super(MainGUI, self).__init__()
         self.metadata = Metadata()
-        self.voxelGrouping = VoxelGrouping()
+        self.voxelGroups = VoxelGroups()
         self.clustering = Clustering()
         self.setWindowTitle("Phindr3D")
         self.image_grid=0
@@ -381,7 +381,7 @@ class MainGUI(QWidget, external_windows):
         """Actions performed when the Phind button is pressed and metadata has been loaded"""
         if self.metadata.GetMetadataFilename():
             # From pixels to supervoxels to megavoxels
-            self.voxelGrouping.action(self.metadata)
+            self.voxelGroups.action(self.metadata)
             # Clustering
             self.clustering.action()
         else:

@@ -15,15 +15,17 @@
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
 try:
+    from .VoxelBaseClass import *
     from .PixelImage import *
-    #from .SuperVoxelImage import *
-    #from .MegaVoxelImage import *
-    from .VoxelGroupingFunctions import *
+    from .SuperVoxelImage import *
+    from .MegaVoxelImage import *
+    from .VoxelGroupsFunctions import *
 except ImportError:
+    from VoxelBaseClass import *
     from PixelImage import *
-    #from SuperVoxelImage import *
-    #from MegaVoxelImage import *
-    from VoxelGroupingFunctions import *
+    from SuperVoxelImage import *
+    from MegaVoxelImage import *
+    from VoxelGroupsFunctions import *
 
 try:
     from ..PhindConfig.PhindConfig import *
@@ -32,12 +34,13 @@ except ImportError:
     from src.PhindConfig.PhindConfig import *
     from src.Data.Metadata import *
 
-class VoxelGrouping:
+class VoxelGroups:
     """From pixels to supervoxels to megavoxels"""
 
     def __init__(self):
         """Constructor"""
-        initial_params = PhindConfig()
+        # PhindConfig is a static class. Reference members with PhindConfig.member
+        #initial_params = PhindConfig()
         self.tilex = None
         self.tiley = None
         self.tilez = None
@@ -81,7 +84,7 @@ class VoxelGrouping:
 
     def action(self, theMetadata):
         """Method run from MainGUI when the Phind button is pressed"""
-        print("Running the VoxelGrouping action method")
+        print("Running the VoxelGroups action method")
         # Redirect to a method with a descriptive name
         self.getBinCentersAndGroupVoxels(theMetadata)
     # end action
@@ -105,7 +108,7 @@ class VoxelGrouping:
 
 
 
-# end class VoxelGrouping
+# end class VoxelGroups
 
 
 
