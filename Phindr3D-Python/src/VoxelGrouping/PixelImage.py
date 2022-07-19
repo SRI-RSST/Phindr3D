@@ -1,4 +1,3 @@
-# Tentative Mega voxel class
 
 try:
     from .VoxelGrouping import VoxelGrouping

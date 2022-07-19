@@ -379,11 +379,14 @@ class MainGUI(QWidget, external_windows):
 
     def phindButtonAction(self):
         """Actions performed when the Phind button is pressed and metadata has been loaded"""
-        # From pixels to supervoxels to megavoxels
-        self.voxelGrouping.action()
-        # Clustering
-        self.clustering.action()
-
+        if self.metadata.GetMetadataFilename():
+            # From pixels to supervoxels to megavoxels
+            self.voxelGrouping.action(self.metadata)
+            # Clustering
+            self.clustering.action()
+        else:
+            # do nothing? display error window?
+            pass
     # end phindButtonAction
 
     def buildErrorWindow(self, errormessage, icon, errortitle="ErrorDialog"):
