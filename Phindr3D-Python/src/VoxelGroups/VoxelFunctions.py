@@ -22,7 +22,15 @@ class VoxelFunctions:
     No constructor. All parameters and methods are static.
     """
 
-    pass
+    #@staticmethod
+    ## Main function for returning bin centers of pixels, supervoxels, and mega voxels
+    ## x - m x n (m is number of observations, n is number of channels/category fractions
+    ## numBins - number of categories
+    #def getPixelBins(x, numBins):
+    #    pass
+
+    def temporary(x, numBins):
+        pass
 
 # end VoxelFunctions
 

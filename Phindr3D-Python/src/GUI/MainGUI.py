@@ -107,15 +107,12 @@ class MainGUI(QWidget, external_windows):
                 try:
                     self.metadata.loadMetadataFile(filename)
                     #print(self.metadata.GetMetadataFilename())
-                    print("Finished loading the metadata")
 
                     adjustbar.setValue(0)
                     slicescrollbar.setValue(0)
                     self.img_display(slicescrollbar, img_plot, sv, mv, color, values)
-                    print("Finished displaying the image")
                     # If the file loaded correctly, proceed to calculating thresholds, scale factors, etc.
-                    #self.metadata.computeImageParameters()
-                    print("Finished computing image parameters")
+                    self.metadata.computeImageParameters()
                     # Update values of GUI widgets
 
                     alert = self.buildErrorWindow("Metadata Extraction Completed.", QMessageBox.Information, "Notice")
@@ -384,10 +381,9 @@ class MainGUI(QWidget, external_windows):
         """Actions performed when the Phind button is pressed and metadata has been loaded"""
         if self.metadata.GetMetadataFilename():
             # From pixels to supervoxels to megavoxels
-            #self.voxelGroups.action(self.metadata)
+            self.voxelGroups.action()
             # Clustering
-            #self.clustering.action()
-            pass
+            self.clustering.action()
         else:
             # do nothing? display error window?
             pass

@@ -19,13 +19,11 @@ try:
     from .PixelImage import *
     from .SuperVoxelImage import *
     from .MegaVoxelImage import *
-    from .VoxelFunctions import *
 except ImportError:
     from VoxelBase import *
     from PixelImage import *
     from SuperVoxelImage import *
     from MegaVoxelImage import *
-    from VoxelFunctions import *
 
 try:
     from ..PhindConfig.PhindConfig import *
@@ -39,39 +37,10 @@ class VoxelGroups:
 
     def __init__(self):
         """Constructor"""
-        # PhindConfig is a static class. Reference members with PhindConfig.member
-        #initial_params = PhindConfig()
-        #self.numSuperVoxelZ = None
-        #self.pixelBinCenters = None
-        #self.pixelBinCenterDifferences = None
-        #self.superVoxelBinCenters = None
+        pass
 
-    # end constructor
-
-    def action(self, theMetadata):
-        """Method run from MainGUI when the Phind button is pressed"""
+    def action(self):
         print("Running the VoxelGroups action method")
-        # Redirect to a method with a descriptive name
-        self.getBinCentersAndGroupVoxels(theMetadata)
-    # end action
-
-    def getBinCentersAndGroupVoxels(self, theMetadata):
-        """Main action to be performed on the images after metadata loading, scaling, and thresholding."""
-
-        # getPixelBinCenters
-        # output of getPixelBinCenters is a 3D numpy array
-        # this is param.pixelBinCenters in Jupyter notebooks/MATLAB versions
-        # The PixelImage object holds the numpy array
-
-        # temporary:
-        thePixelArray = np.zeros((30000,3))
-
-
-
-
-
-    # end getBinCentersAndGroupVoxels
-
 
 
 # end class VoxelGroups

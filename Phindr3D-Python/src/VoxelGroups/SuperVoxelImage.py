@@ -15,9 +15,9 @@
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
 try:
-    from .VoxelBase import *
+    from .VoxelBase import VoxelBase
 except ImportError:
-    from VoxelBase import *
+    from VoxelBase import VoxelBase
 
 class SuperVoxelImage(VoxelBase):
     def __init__(self):
