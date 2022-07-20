@@ -14,17 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
-class VoxelBaseClass:
-    def __init__(self):
-        super().__init__()
-        self.pixelBinCenters = None # np array
+class VoxelFunctions:
+    """Static methods for finding voxel properties. Referenced from
+    https://github.com/DWALab/Phindr3D/tree/9b95aebbd2a62c41d3c87a36f1122a78a21019c8/Lib
+    and
+    https://github.com/SRI-RSST/Phindr3D-python/blob/ba588bc925ef72c72103738d17ea922d20771064/phindr_functions.py
+    No constructor. All parameters and methods are static.
+    """
 
-    def getPixelBinCenters(self, x, metadata):
-        # Same as getSuperVoxelBinCenters, but mega
-        # required: randFieldID, metadata, supervoxels, image params (tileinfo)
-        tilesforTraining = []
+    pass
 
-        self.pixelBinCenters = self.getPixelBins(tilesforTraining)
+# end VoxelFunctions
 
 
-# end class VoxelBaseClass

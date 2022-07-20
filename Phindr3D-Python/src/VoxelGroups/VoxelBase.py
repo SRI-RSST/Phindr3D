@@ -14,22 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
-class VoxelGroupsFunctions:
-    """Static methods for finding voxel properties. Referenced from
-    https://github.com/DWALab/Phindr3D/tree/9b95aebbd2a62c41d3c87a36f1122a78a21019c8/Lib
-    and
-    https://github.com/SRI-RSST/Phindr3D-python/blob/ba588bc925ef72c72103738d17ea922d20771064/phindr_functions.py
-    No constructor. All parameters and methods are static.
-    """
+class VoxelBase:
+    def __init__(self):
+        super().__init__()
+        self.pixelBinCenters = None # np array
 
-    @staticmethod
+    def getPixelBinCenters(self, x, metadata):
+        # Same as getSuperVoxelBinCenters, but mega
+        # required: randFieldID, metadata, supervoxels, image params (tileinfo)
+        tilesforTraining = []
+
+        self.pixelBinCenters = self.getPixelBins(tilesforTraining)
+
     # Main function for returning bin centers of pixels, supervoxels, and mega voxels
     # x - m x n (m is number of observations, n is number of channels/category fractions
     # numBins - number of categories
     def getPixelBins(x, numBins):
         pass
 
-
-# end VoxelGroupsFunctions
-
-
+# end class VoxelBase

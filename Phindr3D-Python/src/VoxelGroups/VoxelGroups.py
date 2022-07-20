@@ -15,17 +15,17 @@
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
 try:
-    from .VoxelBaseClass import *
+    from .VoxelBase import *
     from .PixelImage import *
     from .SuperVoxelImage import *
     from .MegaVoxelImage import *
-    from .VoxelGroupsFunctions import *
+    from .VoxelFunctions import *
 except ImportError:
-    from VoxelBaseClass import *
+    from VoxelBase import *
     from PixelImage import *
     from SuperVoxelImage import *
     from MegaVoxelImage import *
-    from VoxelGroupsFunctions import *
+    from VoxelFunctions import *
 
 try:
     from ..PhindConfig.PhindConfig import *
@@ -41,44 +41,10 @@ class VoxelGroups:
         """Constructor"""
         # PhindConfig is a static class. Reference members with PhindConfig.member
         #initial_params = PhindConfig()
-        self.tilex = None
-        self.tiley = None
-        self.tilez = None
-        self.megaVoxelTileX = None
-        self.megaVoxelTileY = None
-        self.megaVoxelTileZ = None
-        self.numSuperVoxelZ = None
-        self.numMegaVoxelsXY = None
-        self.numMegaVoxels = None
-        self.pixelBinCenters = None
-        self.pixelBinCenterDifferences = None
-        self.superVoxelBinCenters = None
-        self.xOffsetStart = None
-        self.xOffsetEnd = None
-        self.yOffsetStart = None
-        self.yOffsetEnd = None
-        self.zOffsetStart = None
-        self.zOffsetEnd = None
-        self.croppedX = None
-        self.croppedY = None
-        self.croppedZ = None
-        self.origX = None
-        self.origY = None
-        self.origZ = None
-        self.superVoxelXOffsetStart = None
-        self.superVoxelXOffsetEnd = None
-        self.superVoxelXAddStart = None
-        self.superVoxelXAddEnd = None
-        self.superVoxelYAddStart = None
-        self.superVoxelYAddEnd = None
-        self.superVoxelZAddStart = None
-        self.superVoxelZAddEnd = None
-        self.superVoxelYOffsetStart = None
-        self.superVoxelYOffsetEnd = None
-        self.superVoxelZOffsetStart = None
-        self.superVoxelZOffsetEnd = None
-        self.numSuperVoxels = None
-        self.numSuperVoxelsXY = None
+        #self.numSuperVoxelZ = None
+        #self.pixelBinCenters = None
+        #self.pixelBinCenterDifferences = None
+        #self.superVoxelBinCenters = None
 
     # end constructor
 

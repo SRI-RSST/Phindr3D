@@ -15,11 +15,11 @@
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
 try:
-    from .VoxelBaseClass import *
+    from .VoxelBase import *
 except ImportError:
-    from VoxelBaseClass import *
+    from VoxelBase import *
 
-class MegaVoxelImage(VoxelBaseClass):
+class MegaVoxelImage(VoxelBase):
     def __init__(self):
         super().__init__()
         self.megaVoxelBinCenters = None # np array
