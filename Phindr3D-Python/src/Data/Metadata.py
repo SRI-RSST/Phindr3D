@@ -323,7 +323,6 @@ class Metadata:
             randFieldID = np.array(randFieldIDList)
         #end if
         # output is randFieldID is a Numpy array of image ids
-        print(randFieldID) #########################################################################
         return randFieldID
     # end getTrainingFields
 
@@ -360,7 +359,6 @@ class Metadata:
             generatedArray = Generator.choice(depth, size=randHalf, replace=False, shuffle=False)
             # TO DO Add try-catch here for KeyError
             randZ = [zStackKeys[int(j)] for j in generatedArray]
-            print(randZ) ####################################################################################
             minVal = np.zeros((randHalf, numChannels))
             maxVal = np.zeros((randHalf, numChannels))
 
@@ -642,6 +640,7 @@ class Metadata:
 # end class Metadata
 
 if __name__ == '__main__':
+    import json
     """Tests of the Metadata class that can be run directly."""
     # For testing purposes:
     # Running will prompt user for a text file, image id, stack id, and channel number
@@ -649,23 +648,34 @@ if __name__ == '__main__':
 
     Generator = np.random.default_rng(1234)
 
-    metadatafile = r'testdata\metadata_tests\DLA_test_images\metadatatest_metadata.txt'
+    metadatafile = r'testdata\metadata_tests\metadatatest_metadata.txt'
 
     test = Metadata()
     if test.loadMetadataFile(metadatafile):
+
+        with open('testdata\\metadata_tests\\expected.json', 'r') as js:
+            expected = json.load(js)
+            js.close()
+
         print("So, did it load? " + "Yes!" if test.metadataLoadSuccess else "No.")
         print("===")
         print("Running computeImageParameters: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
-        print('Image parameter value comparison:')
-        print(test.lowerbound)
-        print(test.upperbound)
-        print(test.intensityThreshold)
+        print("===")
+        print('Calculated image parameter comparisons...')
+        lowerequal = (test.lowerbound == np.array(expected['lowerbound'])).all()
+        upperequal = (test.upperbound == np.array(expected['upperbound'])).all()
+        intequal = (test.intensityThreshold == np.array(expected['intensity_threshold'])).all()
+        print(f'Scaling factor expected result: { lowerequal and upperequal }')
+        print(f'Intensity threshold expected result: {intequal}')
+        print("===")
         test.intensityNormPerTreatment = True
         print("Running computeImageParameters by treatment: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
-        print(test.lowerbound)
-        print(test.upperbound)
-        print(test.intensityThreshold)
-        print(test.GetAllTreatments())
+        print("===")
+        treatlowerequal = (test.lowerbound == np.array(expected['treatment_lowerbound'])).all()
+        treatupperequal = (test.upperbound == np.array(expected['treatment_upperbound'])).all()
+        treatintequal = (test.intensityThreshold == np.array(expected['treatment_intensity_threshold'])).all()
+        print(f'Scaling factors by treatment expected result: {treatlowerequal and treatupperequal}')
+        print(f'Intensity threshold expected result: {treatintequal}')
 
     else:
         print("loadMetadataFile was unsuccessful")
