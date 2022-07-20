@@ -27,10 +27,8 @@ except ImportError:
 
 try:
     from ..PhindConfig.PhindConfig import *
-    from ..Data.Metadata import *
 except ImportError:
     from src.PhindConfig.PhindConfig import *
-    from src.Data.Metadata import *
 
 class VoxelGroups:
     """From pixels to supervoxels to megavoxels"""

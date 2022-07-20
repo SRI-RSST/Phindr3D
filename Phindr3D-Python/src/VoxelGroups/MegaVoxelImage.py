@@ -15,9 +15,9 @@
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
 try:
-    from .VoxelBase import VoxelBase
+    from .VoxelBase import *
 except ImportError:
-    from VoxelBase import VoxelBase
+    from VoxelBase import *
 
 class MegaVoxelImage(VoxelBase):
     def __init__(self):
