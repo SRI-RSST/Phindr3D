@@ -313,7 +313,8 @@ class VoxelGroups:
 
         if not countBackground:
             superVoxelProfile = superVoxelProfile[:, 1:]
-        superVoxelProfile = np.divide(superVoxelProfile, np.array([np.sum(superVoxelProfile, axis=1)]).T) #dont worry about divide by zero errors, they are supposed to happen here!
+        #dont worry about divide by zero errors, they are handled by the following line!
+        superVoxelProfile = np.divide(superVoxelProfile, np.array([np.sum(superVoxelProfile, axis=1)]).T)
         superVoxelProfile[superVoxelProfile == np.nan] = 0
         fgSuperVoxel = fgSuperVoxel.astype(bool)
         ##fgSuperVoxel used to be fgSuperVoxel.T
