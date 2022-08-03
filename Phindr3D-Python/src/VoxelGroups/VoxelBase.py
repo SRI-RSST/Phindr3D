@@ -34,6 +34,7 @@ class VoxelBase:
     def __init__(self):
         """Constructor"""
         self.numVoxelBins = PhindConfig.numVoxelBins
+        self.numMegaVoxelBins = PhindConfig.numMegaVoxelBins
         self.textureFeatures = PhindConfig.textureFeatures
         # This is confusing and hopefully we can change it
         self.texture_features = False
@@ -174,6 +175,46 @@ class VoxelBase:
             return megaVoxelProfile, fgMegaVoxel
     # end getMegaVoxelProfile
 
+
+    def getImageProfile(self, megaVoxelBinCenters, megaVoxelProfile, tileInfo, fgMegaVoxel):
+        """provides multi-parametric representation of image based on megavoxel categories.
+            called in extractImageLevelTextureFeatures"""
+        errorVal = (None, None)
+        showImage = PhindConfig.showImage
+        countBackground = PhindConfig.countBackground
+        mvcolormap = PhindConfig.mvcolormap
+        tmp1 = np.array([dfunc.mat_dot(megaVoxelBinCenters, megaVoxelBinCenters, axis=1)]).T
+        tmp2 = dfunc.mat_dot(megaVoxelProfile[fgMegaVoxel], megaVoxelProfile[fgMegaVoxel], axis=1)
+        a = np.add(tmp1, tmp2).T - (2 * (megaVoxelProfile[fgMegaVoxel] @ megaVoxelBinCenters.T))
+        minDis = np.argmin(a, axis=1) + 1
+        x = np.zeros(megaVoxelProfile.shape[0], dtype='uint8')
+        x[fgMegaVoxel] = minDis
+        numbins = self.numMegaVoxelBins
+        tmp = np.zeros(numbins + 1)
+        for i in range(0, numbins + 1):
+            tmp[i] = np.sum(x[fgMegaVoxel] == (i))
+        imageProfile = tmp
+        if showImage:
+            mv_show = np.reshape(x, (tileInfo.numMegaVoxelZ, tileInfo.numMegaVoxelX, tileInfo.numMegaVoxelY))
+            for i in range(mv_show.shape[0]):
+                plt.figure()
+                title = f'Megavoxel image'
+                plt.title(title)
+                plt.imshow(mv_show[i, :, :], mvcolormap)
+                plt.colorbar()
+                plt.show()
+
+        # In phindr_functions.py, there were several lines commented out here
+        # They were inside an if statement, if param.textureFeatures
+
+        if not countBackground:
+            rawProfile = imageProfile[1:].copy()
+            imageProfile = imageProfile[1:]
+        else:
+            rawProfile = imageProfile.copy()
+        imageProfile = imageProfile / np.sum(imageProfile)  # normalize the image profile
+        return imageProfile, rawProfile  # , texture_features
+    # end getImageProfile
 
 
 
