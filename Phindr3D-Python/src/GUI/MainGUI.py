@@ -15,7 +15,6 @@
 # along with src.  If not, see <http://www.gnu.org/licenses/>.
 
 from .external_windows import *
-from .analysis_scripts import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -298,7 +297,7 @@ class MainGUI(QWidget, external_windows):
                 checkbox_prev.setChecked(False)
             if checkbox_cur.isChecked():
                 #plot SV/MV GRID
-                overlay=getImageWithSVMVOverlay(img_grid, params, type)
+                overlay=DataFunctions.getImageWithSVMVOverlay(img_grid, params, type)
                 cmap=[[0,0,0,0],[255,255,255,1]]
                 cmap = matplotlib.colors.LinearSegmentedColormap.from_list('map_white', cmap)
                 img_plot.axes.imshow(overlay, zorder=5, cmap=cmap, interpolation=None)

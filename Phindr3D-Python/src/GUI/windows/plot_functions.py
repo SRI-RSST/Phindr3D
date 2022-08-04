@@ -17,17 +17,18 @@
 import numpy as np
 from cv2 import medianBlur
 from PIL import Image
-from ..analysis_scripts import *
 from .colorchannelWindow import *
 import matplotlib
 import matplotlib.pyplot as plt
 from math import ceil, floor
-#from ...Clustering.Clustering_Functions import *
-#try:
-#    from ...Clustering.Clustering_Functions import *
-#except ImportError:
-#    from src.Clustering.Clustering_Functions import *
-from Clustering import *
+
+try:
+    from ...Clustering import *
+    from ...Data.DataFunctions import *
+except ImportError:
+    from src.Clustering.Clustering import *
+    from src.Data.DataFunctions import *
+
 from textwrap import wrap, fill
 
 def merge_channels(data, rgb_img, ch_len, scroller_value, color, meta_loc, box):
@@ -39,7 +40,7 @@ def merge_channels(data, rgb_img, ch_len, scroller_value, color, meta_loc, box):
         # medianfilter for slice or MIP projection
         if box == False:
             cur_img = medianBlur(cur_img, 3)
-        threshold = getImageThreshold(cur_img)
+        threshold = DataFunctions.getImageThreshold(cur_img)
         cur_img[cur_img <= threshold] = 0
         cur_img = np.dstack((cur_img, cur_img, cur_img))
         rgb_img[int(ch_num) - 1, :, :, :] = np.multiply(cur_img, rgb_color)
