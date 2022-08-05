@@ -206,7 +206,8 @@ class Clustering:
             raise Exception("Invalid plot")
 
     def cluster_est(self, X):
-        self.estimateNumClusters(self, X)
+        numclust = self.estimateNumClusters(self, X)
+
 
     #cluster functions from Matlab - Python Translation
     """Static methods for cluster analysis. Referenced from
@@ -550,13 +551,6 @@ class Clustering:
                 print(f'cluster{i + 1}: {counts[i]} counts')
         else:
             clusterResult = np.arange(0, data.shape[0])
-        ''' unused...
-        elif type == 'SK':
-            print(C.pmed)
-            clusterResult = self.apcluster_sklearn(projection_data, numberClusters, sparse=sparse, maxits=maxits, convits=convits,
-                                              dampfact=dampfact, plot=plot, details=details, nonoise=nonoise)
-        '''
-
         return (clusters, counts, idx)
 
 
@@ -591,396 +585,7 @@ class Clustering:
         C.S = sim  # similarity matrix
         return C
 
-    ''' #Issue with original Matlab function... not in use...
-    @staticmethod
-    def apcluster_sparse(self, s, p, maxits=500, convits=50, dampfact=0.5, plot=False, details=False,
-                         nonoise=False):  # plot=False, details=False, nonoise=False):
-        """
-        %
-        % APCLUSTER uses affinity propagation (Frey and Dueck, Science,
-        % 2007) to identify data clusters, using a set of real-valued
-        % pair-wise data point similarities as input. Each cluster is
-        % represented by a data point called a cluster center, and the
-        % method searches for clusters so as to maximize a fitness
-        % function called net similarity. The method is iterative and
-        % stops after maxits iterations (default of 500 - see below for
-        % how to change this value) or when the cluster centers stay
-        % constant for convits iterations (default of 50). The command
-        % apcluster(s,p,'plot') can be used to plot the net similarity
-        % during operation of the algorithm.
-        %
-        % For N data points, there may be as many as N^2-N pair-wise
-        % similarities (note that the similarity of data point i to k
-        % need not be equal to the similarity of data point k to i).
-        % These may be passed to APCLUSTER in an NxN matrix s, where
-        % s(i,k) is the similarity of point i to point k. In fact, only
-        % a smaller number of relevant similarities are needed for
-        % APCLUSTER to work. If only M similarity values are known,
-        % where M < N^2-N, they can be passed to APCLUSTER in an Mx3
-        % matrix s, where each row of s contains a pair of data point
-        % indices and a corresponding similarity value: s(j,3) is the
-        % similarity of data point s(j,1) to data point s(j,2).
-        %
-        % APCLUSTER automatically determines the number of clusters,
-        % based on the input p, which is an Nx1 matrix of real numbers
-        % called preferences. p(i) indicates the preference that data
-        % point i be chosen as a cluster center. A good choice is to
-        % set all preference values to the median of the similarity
-        % values. The number of identified clusters can be increased or
-        % decreased  by changing this value accordingly. If p is a
-        % scalar, APCLUSTER assumes all preferences are equal to p.
-        %
-        % The fitness function (net similarity) used to search for
-        % solutions equals the sum of the preferences of the the data
-        % centers plus the sum of the similarities of the other data
-        % points to their data centers.
-        %
-        % The identified cluster centers and the assignments of other
-        % data points to these centers are returned in idx. idx(j) is
-        % the index of the data point that is the cluster center for
-        % data point j. If idx(j) equals j, then point j is itself a
-        % cluster center. The sum of the similarities of the data
-        % points to their cluster centers is returned in dpsim, the
-        % sum of the preferences of the identified cluster centers is
-        % returned in expref and the net similarity (sum of the data
-        % point similarities and preferences) is returned in netsim.
-        %
-        % EXAMPLE
-        %
-        % N=100; x=rand(N,2); % Create N, 2-D data points
-        % M=N*N-N; s=zeros(M,3); % Make ALL N^2-N similarities
-        % j=1;
-        % for i=1:N
-        %   for k=[1:i-1,i+1:N]
-        %     s(j,1)=i; s(j,2)=k; s(j,3)=-sum((x(i,:)-x(k,:)).^2);
-        %     j=j+1;
-        %   end;
-        % end;
-        % p=median(s(:,3)); % Set preference to median similarity
-        % [idx,netsim,dpsim,expref]=apcluster(s,p,'plot');
-        % fprintf('Number of clusters: %d\n',length(unique(idx)));
-        % fprintf('Fitness (net similarity): %f\n',netsim);
-        % figure; % Make a figures showing the data and the clusters
-        % for i=unique(idx)'
-        %   ii=find(idx==i); h=plot(x(ii,1),x(ii,2),'o'); hold on;
-        %   col=rand(1,3); set(h,'Color',col,'MarkerFaceColor',col);
-        %   xi1=x(i,1)*ones(size(ii)); xi2=x(i,2)*ones(size(ii));
-        %   line([x(ii,1),xi1]',[x(ii,2),xi2]','Color',col);
-        % end;
-        % axis equal tight;
-        %
-        % PARAMETERS
-        %
-        % [idx,netsim,dpsim,expref]=apcluster(s,p,'NAME',VALUE,...)
-        %
-        % The following parameters can be set by providing name-value
-        % pairs, eg, apcluster(s,p,'maxits',1000):
-        %
-        %   Parameter    Value
-        %   'sparse'     No value needed. Use when the number of data
-        %                points is large (eg, >3000). Normally,
-        %                APCLUSTER passes messages between every pair
-        %                of data points. This flag causes APCLUSTER
-        %                to pass messages between pairs of points only
-        %                if their input similarity is provided and
-        %                is not equal to -Inf.
-        %   'maxits'     Any positive integer. This specifies the
-        %                maximum number of iterations performed by
-        %                affinity propagation. Default: 500.
-        %   'convits'    Any positive integer. APCLUSTER decides that
-        %                the algorithm has converged if the estimated
-        %                cluster centers stay fixed for convits
-        %                iterations. Increase this value to apply a
-        %                more stringent convergence test. Default: 50.
-        %   'dampfact'   A real number that is less than 1 and
-        %                greater than or equal to 0.5. This sets the
-        %                damping level of the message-passing method,
-        %                where values close to 1 correspond to heavy
-        %                damping which may be needed if oscillations
-        %                occur.
-        %   'plot'       No value needed. This creates a figure that
-        %                plots the net similarity after each iteration
-        %                of the method. If the net similarity fails to
-        %                converge, consider increasing the values of
-        %                dampfact and maxits.
-        %   'details'    No value needed. This causes idx, netsim,
-        %                dpsim and expref to be stored after each
-        %                iteration.
-        %   'nonoise'    No value needed. Degenerate input similarities
-        %                (eg, where the similarity of i to k equals the
-        %                similarity of k to i) can prevent convergence.
-        %                To avoid this, APCLUSTER adds a small amount
-        %                of noise to the input similarities. This flag
-        %                turns off the addition of noise.
-        %
-        % Copyright (c) Brendan J. Frey and Delbert Dueck (2006). This
-        % software may be freely used and distributed for
-        % non-commercial purposes.
-        """
-        maxits = int(maxits)
-        if maxits <= 0:
-            print('maxits must be positve integer')
-            return None
-        convits = int(convits)
-        if convits <= 0:
-            print('convits must be positive integer')
-            return None
-        lam = dampfact
-        if (lam < 0.5) or (lam >= 1):
-            print('dampfact must be in the range [0.5, 1)')
-            return None
-        if lam > 0.9:
-            print(
-                '\nLarge damping factor selected, plotting is recommended, Algorithm will also change decisions slowly so large convits should be set as well.\n')
-        if len(s.shape) != 2:
-            print('s should be 2d matrix')
-            return None
-        elif len(p.shape) > 2:
-            print('p should be vector or scalar')
-        elif s.shape[1] == 3:
-            tmp = np.maximum(np.max(s[:, 0]), np.max(s[:, 1]))
-            if len(p) == 1:
-                N = tmp
-            else:
-                N = len(p)
-            if tmp > N:
-                print('Error, data point index exceeds number of datapoints')
-                return None
-            elif np.minimum(np.min(s[:, 0]), np.min(s[:, 1])) < 0:
-                print('Error, indices must be >= 0')
-                return None
-        elif s.shape[0] == s.shape[1]:
-            N = s.shape[0]
-            if (np.array([p]).size != N) and (not np.isscalar(p)):
-                print('Error, p should be scalar or vector of size N')
-                return None
-        else:
-            print('Error, s must have 3 columns or be square.')
-            return None
 
-        # make vector of preferences:
-        if np.isscalar(p):
-            p = p*np.ones((N, 1), dtype=int)
-        arr=np.arange(0,N)
-        #https://docs.scipy.org/doc/numpy-1.15.0/user/numpy-for-matlab-users.html
-        #https://stackoverflow.com/questions/1721802/what-is-the-equivalent-of-matlabs-repmat-in-numpy
-        #arr=arr[:,np.newaxis]
-
-        # append any self-similarities (preferences) to s-matrix
-        #tmps = np.hstack((np.tile(arr, (1, 2)), p))
-        #tmps=np.array([arr, p])
-        #tmps = np.hstack((arr, p))
-        #print(tmps)
-        #tmps=np.hstack((np.tile(np.arange(0, N).T, (1, 2))[0], p))
-        #print(np.shape(tmps), np.shape(s))
-        #s=np.array([s, tmps])
-        #s = np.concatenate((s, tmps))
-        #s = np.vstack((s, tmps))
-        M = s.shape[0]
-        print(np.shape(s[:,2]))
-        if not nonoise:
-            rns = np.random.get_state()
-            np.random.seed(0)
-            s = s + (self.eps * s + self.realmin * 100) * np.random.random((M, 1))
-            #s = s[:,2] + (self.eps * s[:,2] + self.realmin * 100) * np.random.random((M, 1))
-            np.random.set_state(rns)
-        # construct indices of neighbors:
-        ind1e = np.zeros((N, 1), dtype=int)
-        for j in range(M):
-            k = arr[j]
-            #k = s[j, 0]
-            ind1e[k] = ind1e[k] + 1
-        print(ind1e)
-        ind1e = np.cumsum(ind1e, dtype=int)-1
-
-        ind1s = np.concatenate(([1], ind1e[:-1] + 1))
-        ind1 = np.zeros((M, 1), dtype=int)
-        for j in range(M):
-            k=arr[j]
-            #k = s[j, 0]
-            #print(ind1s[k])
-            ind1[ind1s[k]] = j
-            ind1s[k] = ind1s[k] + 1
-        ind1s = np.concatenate(([1], ind1e[:-1] + 1))
-        ind2e = np.zeros((N, 1), dtype=int)
-        for j in range(M):
-            k=arr[j]
-            #k = s[j, 1]
-            ind2e[k] = ind2e[k] + 1
-        ind2e = np.cumsum(ind2e, dtype=int)-1
-        ind2s = np.concatenate(([1], ind2e[:-1] + 1))
-        ind2 = np.zeros((M, 1), dtype=int)
-        for j in range(M):
-            k=arr[j]
-            #k = s[j, 1]
-            ind2[ind2s[k]] = j
-            ind2s[k] = ind2s[k] + 1
-        ind2s = np.concatenate(([1], ind2e[:-1] + 1))
-        # allocate space for messages, etc:
-        A = np.zeros((M, 1))
-        R = np.zeros((M, 1))
-        t = 1
-        if plot:
-            netsim = np.zeros((1, maxits + 1))
-        if details:
-            idx = np.zeros((N, maxits + 1))
-            netsim = np.zeros((N, maxits + 1))
-            dpsim = np.zeros((N, maxits + 1))
-            expref = np.zeros((N, maxits + 1))
-        # execute parallel affinity propagation updates:
-        e = np.zeros((N, convits))
-        dn = False
-        i = 0
-        while not dn:
-            i += 1
-            # compute responsibilities:
-            for j in range(N):
-                ss = s[ind1s[j]:ind1e[j]]
-                #ss = s[ind1s[j]:ind1e[j], 2]
-                As = A[ind1s[j]:ind1e[j]] + ss
-                Y = np.amax(As, axis=0)
-                I = np.argmin(As, axis=0)
-                As[I] = -self.realmax
-                Y2 = np.amax(As, axis=0)
-                I2 = np.argmax(As, axis=0)
-                r = ss - Y
-                r[I] = ss[I] - Y2
-                R[ind1[ind1s[j]:ind1e[j]]] = (1 - lam) * r + lam * R[ind1[ind1s[j]:ind1e[j]]]
-            # compute availabilities:
-            for j in range(N):
-                rp = R[ind2[ind2s[j]:ind2e[j]]]
-                rp[:-1] = np.maximum(rp[:-1])
-                a = np.sum(rp, axis=0) - rp
-                a[:-1] = np.minimum(a[:-1], 0)
-                A[ind2[ind2s[j]:ind2e[j]]] = (1 - lam) * a + lam * A[ind2[ind2s[j]:ind2e[j]]]
-            # check for convergence:
-            E = ((A[M - N:M] + R[M - N:M]) > 0)
-            e[:, ((i - 1) % convits) + 1] = E
-            K = np.sum(E, axis=0)
-            if i >= convits or i >= maxits:
-                se = np.sum(e, axis=1)
-                unconverged = (np.sum((se == convits) + (se == 0)) != N)
-                if (not unconverged and (K > 0)) or (i == maxits):
-                    dn = True
-
-            # handle plotting and detail storage if required.
-            if plot or details:
-                if k == 0:
-                    tmpnetsim = np.nan
-                    tmpdpsim = np.nan
-                    tmpexpref = np.nan
-                    tmpidx = np.nan
-                else:
-                    tmpidx = np.zeros((N, 1))
-                    tmpdsim = 0
-                    tmpidx[np.nonzero(E)] = np.nonzero(E)
-                    tmpexpref = np.sum(p[np.nonzero(E)])
-                    discon = False
-                    for j in np.where(E == 0):
-                        ss = s[ind1[ind1s[j]:ind1e[j]]]
-                        ii = p[ind1[ind1s[j]:ind1e[j]], 1]
-                        #ss = s[ind1[ind1s[j]:ind1e[j]], 2]
-                        #ii = s[ind1[ind1s[j]:ind1e[j]], 1]
-                        ee = np.nonzero(E[ii])
-                        if len(ee) == 0:
-                            discon = True
-                        else:
-                            smx = np.max(ss[ee])
-                            imx = np.argmax(ss[ee])
-                            tmpidx[j] = ii[ee[imx]]
-                            tmpdpsim += smx
-                    if discon:
-                        tmpnetsim = np.nan
-                        tmpdpsim = np.nan
-                        tmpexpref = np.nan
-                        tmpidx = np.nan
-                    else:
-                        tmpnetsim = tmpdpsim + tmpexpref
-            if details:
-                netsim[i] = tmpnetsim
-                dpsim[i] = tmpdpsim
-                expref[i] = tmpexpref
-                idx[:, i] = tmpidx
-            if plot:
-                netsim[i] = tmpnetsim
-                tmp = np.arange(0, i)
-                tmpi = np.nonzero(np.isfinite(netsim[:i]))
-                # matplotlib
-                matplotlib.use('Qt5Agg')
-                winc = clusterdisplay(tmp[tmpi], netsim[tmpi], None, None, 'ap_cluster_sparse' '# iterations',
-                                      'Net similarity of quantized intermediate solutions', None, None, 0)
-        # identify exemplars
-        E = ((A[M - N:M] + R[M - N:M]) > 0)
-        K = np.sum(E)
-        if K > 0:
-            tmpidx = np.zeros((N, 1))
-            tmpidx[np.nonzero(E)] = np.nonzero[E]  # identify clusters
-            for j in np.nonzero(E == 0).T:
-                ss = s[ind1[ind1[j]:ind1e[j]], 2]
-                ii = s[ind1[ind1[j]:ind1e[j]], 1]
-                ee = np.nonzero(E[ii])
-                smx = np.max(ss[ee])
-                imx = np.argmax([ss[ee]])
-                tmpidx[j] = ii[ee[imx]]
-            EE = np.zeros((N, 1))
-            for j in np.nonzero(E).T:
-                jj = np.nonzero(tmpidx == j)
-                mx = -np.inf  # this doesnt get used
-                ns = np.zeros((N, 1))
-                msk = p.zeros((N, 1))
-                for m in jj.T:
-                    mm = s[ind1[ind1s[m]:ind1e[m]], 1]
-                    msk[mm] = msk[mm] + 1
-                    ns[mm] = ns[mm] + s[ind1[ind1s[m]:ind1e[m]], 2]
-                ii = jj[np.nonzero(msk[jj] == len(jj))]
-                smx = np.max(ns[ii])
-                imx = np.argmax(ns[ii])
-                EE[ii[imx]] = 1
-            E = EE
-            tmpidx = np.zeros((N, 1))
-            tmpdpsiim = 0
-            tmpidx[np.nonzero(E)] = np.nonzero(E)
-            tmpexpref = np.sum(p[np.nonzero(E)])
-            for j in np.nonzero(E == 0).T:
-                ss = s[ind1[ind1s[j]:ind1e[j]], 2]
-                ii = s[ind1[ind1s[j]:ind1e[j]], 1]
-                ee = np.nonzero(E[ii])
-                smx = np.max(ss[ee])
-                imx = np.argmax(ss[ee])
-                tmpidx[j] = ii[ee[imx]]
-                tmpdpsim = tmpdpsim + smx
-            tmpnetsim = tmpdpsim + tmpexpref
-        else:
-            tmpidx = np.full((N, 1), np.nan)
-            tmpnetsim = np.nan
-            tmpexpref = np.nan
-        if details:
-            netsim[i + 1] = tmpnetsim
-            netsim = netsim[:i + 1]
-            dpsim[i + 1] = tmpnetsim - tmpexpref
-            dpsim = dpsim[:i + 1]
-            expref[i + 1] = tmpexpref
-            expref = expref[:i + 1]
-            idx[:, i + 1] = tmpidx
-            idx = idx[:, :i + 1]
-        else:
-            netsim = tmpnetsim
-            dpsim = np.array(tmpnetsim - tmpexpref)
-            expref = tmpexpref
-            idx = tmpidx
-        if plot or details:
-            print(f'\nNUmber of identified clusters: {K}')
-            print(f'Fitness (net similarity): {tmpnetsim}')
-            print(f'\tSimilarities of data points to exemplars: {dpsim[-1]}')
-            print(f'\tPreferences of selected exemplars: {tmpexpref}')
-            print(f'Number of iterations: {i}')
-        if unconverged:
-            print(f'\n*** Warning: Algorithm did not converger. The similarities may contain degeneracies.')
-            print(
-                f'\tAdd noise to similarities to remove degeneracies. To monitor thhe similarity, activate plotting.')
-            print(f'also consider increasing maxits and if necessary dampfact')
-        return idx, netsim, dpsim, expref
-    '''
     # https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/14620/versions/4/previews/apcluster.m/index.html
     # https://www.mathworks.com/matlabcentral/fileexchange/25722-fast-affinity-propagation-clustering-under-given-number-of-clusters?tab=discussions
     @staticmethod
@@ -1317,23 +922,7 @@ class Clustering:
             print(
                 'To monitor net similarity, activate plotting. Also consider increasing maxits and if necessary, dampfact.')
         return idx, netsim, dpsim, expref, unconverged
-    @staticmethod
-    def apcluster_sklearn(s, p, sparse=False, maxits=500, convits=15, dampfact=0.5, plot=False, details=False,
-                          nonoise=False):
-        """
-        litterally just cluster, no statistics given or nothing.
-        """
-        af = AffinityPropagation(damping=dampfact, max_iter=maxits, convergence_iter=convits, preference=p,
-                                 affinity='euclidean', verbose=details).fit(s)
-        print(af)
-        print("centers",af.cluster_centers_)
-
-        center_indices = af.cluster_centers_indices_
-        which_cluster = af.labels_
-        idx = center_indices[which_cluster]
-        nice_labels = which_cluster + 1
-        print(idx, nice_labels, which_cluster, center_indices)
-        return idx, nice_labels
+    
     @staticmethod
     def apclusterK(self, s, kk, prc=10):
         """called in computeClustering"""
@@ -1435,11 +1024,12 @@ class Clustering:
         pref = tmppref
         print(f'Found {tmpk} clusters using a preference of {pref}')
         return idx, netsim, dpsim, expref, pref
+
     @staticmethod
-    def estimateNumClusters(self, X):
+    def estimateNumClusters(self, X, pl=True):
         C = self.clsIn(self, X)  # make similarity matrix
         step = 100
-        pref = np.linspace(C.pmin, C.pmax, 100, endpoint=True)
+        pref = np.linspace(C.pmin, C.pmax, step, endpoint=True)
         yCls = np.zeros(pref.shape)
         for i in range(len(pref)):
             idx, netsim, dpsim, expref, unconverged = self.apcluster(self, C.S, pref[i], dampfact=0.9)
@@ -1451,8 +1041,9 @@ class Clustering:
                     yCls[i] = yCls[i - 1]
             else:
                 yCls[i] = len(uIdx)
-        numclust = self.getBestPreference(pref, yCls, pl=True)
+        numclust = self.getBestPreference(pref, yCls, pl=pl)
         print(f'Estimated optimal number of clusters: {numclust}')
+        return numclust
 
     #   getBestPreference.m
     @staticmethod
@@ -1512,3 +1103,15 @@ class Clustering:
                                   '# Clusters', 'Optimal Cluster', [xCent, yCent, optText], 1)
         return yp
     # end Clustering
+
+#unit test for clustering.py
+if __name__ == '__main__':
+    #want to test cluster estimation function
+    #want to test clustering result
+    testdata = "testdata\\iris.csv"
+    testdata = np.loadtxt(testdata, delimiter='\t', skiprows=1, usecols=(1,2,3,4))
+    clusterTest = Clustering()
+    print('\nTesting Cluster estimation...\n')
+    numclust = clusterTest.estimateNumClusters(clusterTest, testdata, pl=False)
+    print(f'\tEstimated 3 clusters from iris dataset: {numclust == 3}')
+
