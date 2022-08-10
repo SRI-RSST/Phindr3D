@@ -787,7 +787,6 @@ class Clustering:
         dS = np.diag(S)
         A = np.zeros((N, N))
         R = np.zeros((N, N))
-        t = 1
         if plot:
             netsim = np.zeros(maxits + 1)
         if details:
@@ -810,7 +809,6 @@ class Clustering:
             for k in range(N):
                 AS[k, I[k]] = -self.realmax
             Y2 = np.amax(AS, axis=1)
-            I2 = np.argmax(AS, axis=1)
             R = S - np.transpose(np.tile(Y, [N, 1]))
             for k in range(N):
                 R[k, I[k]] = S[k, I[k]] - Y2[k]
@@ -873,16 +871,13 @@ class Clustering:
         K = max(I.shape)  # fixed len to matlab "Length"
         if K > 0:
             # identify clusters
-            tmp = np.amax(S[:, I], axis=1)  # all rows, columns from I, max along column axis
             c = np.argmax(S[:, I], axis=1)  # index of maximum along axis()
             c[I] = np.arange(0, K)
             # refine the final set of exemplars and clusters and return results
             for k in range(K):
                 ii = np.nonzero(c == k)[0]
-                # y = np.max(np.sum(S[ii, ii], axis=0))
-                j = np.argmax(np.sum(S[ii, ii], axis=0))
+                j = np.argmax(np.sum(S[np.ix_(ii, ii)], axis=0))
                 I[k] = ii[j]
-            tmp = np.amax(S[:, I], axis=1)
             c = np.argmax(S[:, I], axis=1)
             c[I] = np.arange(0, K)
             tmpidx = I[c]  # choose I's based on c
@@ -1114,5 +1109,5 @@ if __name__ == '__main__':
     print(f'\tEstimated 3 clusters from iris dataset: {numclust == 3}')
 
     #want to test clustering result
-
+    
 
