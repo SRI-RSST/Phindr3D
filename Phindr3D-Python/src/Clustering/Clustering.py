@@ -539,7 +539,6 @@ class Clustering:
         #Nclusters = 4  # number of clusters to try to hit
         #add to input function. temp
         percent_dev = 1  # percentage by which final number of clusters may deviate from Nclusters
-        print('ran')
         type = type.upper()
         C = self.clsIn(self,data)
         print(C.pmed)
@@ -584,7 +583,6 @@ class Clustering:
         C.pmin, C.pmax = self.preferenceRange(self, sim)
         C.S = sim  # similarity matrix
         return C
-
 
     # https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/14620/versions/4/previews/apcluster.m/index.html
     # https://www.mathworks.com/matlabcentral/fileexchange/25722-fast-affinity-propagation-clustering-under-given-number-of-clusters?tab=discussions
@@ -813,7 +811,7 @@ class Clustering:
                 AS[k, I[k]] = -self.realmax
             Y2 = np.amax(AS, axis=1)
             I2 = np.argmax(AS, axis=1)
-            R = S - np.tile(Y, [N, 1])
+            R = S - np.transpose(np.tile(Y, [N, 1]))
             for k in range(N):
                 R[k, I[k]] = S[k, I[k]] - Y2[k]
             # damping
@@ -1107,11 +1105,14 @@ class Clustering:
 #unit test for clustering.py
 if __name__ == '__main__':
     #want to test cluster estimation function
-    #want to test clustering result
-    testdata = "testdata\\iris.csv"
-    testdata = np.loadtxt(testdata, delimiter='\t', skiprows=1, usecols=(1,2,3,4))
+
+    testdata = "testdata\\cluster_test\\iris.txt"   #Data in sample file is already rescaled and filtered as it would be by phindr3D (0-1 along columns, drop duplicates, sort by feature columns in ascending order.)
+    testdata = np.loadtxt(testdata, delimiter='\t', skiprows=1, usecols=(2,3,4,5))
     clusterTest = Clustering()
     print('\nTesting Cluster estimation...\n')
     numclust = clusterTest.estimateNumClusters(clusterTest, testdata, pl=False)
     print(f'\tEstimated 3 clusters from iris dataset: {numclust == 3}')
+
+    #want to test clustering result
+
 
