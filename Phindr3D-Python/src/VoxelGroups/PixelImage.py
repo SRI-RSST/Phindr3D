@@ -72,7 +72,7 @@ class PixelImage(VoxelBase):
             croppedIM = \
                 croppedIM[
                 np.sum(croppedIM > metadata.intensityThreshold, axis=1) >= metadata.GetNumChannels() / 3, :]
-            croppedIM = self.selectPixelsbyWeights(croppedIM)
+            croppedIM = self.selectPixelsbyWeights(croppedIM, metadata)
             if croppedIM.shape[0] >= training.pixelsPerImage:
                 trPixels[startVal:startVal + training.pixelsPerImage, :] = np.array([croppedIM[i, :] for i in
                                                                                      metadata.Generator.choice(
@@ -87,7 +87,7 @@ class PixelImage(VoxelBase):
             trPixels = np.zeros((training.pixelsPerImage * randZ, metadata.GetNumChannels()))
         return trPixels
 
-    def selectPixelsbyWeights(self, x):
+    def selectPixelsbyWeights(self, x, metadata):
         n, bin_edges = np.histogram(x, bins=(int(1 / 0.025) + 1), range=(0, 1), )
         q = np.digitize(x, bin_edges)
         n = n / np.sum(n)
@@ -95,7 +95,7 @@ class PixelImage(VoxelBase):
         for i in range(0, n.shape[0]):
             p[q == i] = n[i]
         p = 1 - p
-        p = np.sum(p > np.random.random((q.shape)), axis=1)
+        p = np.sum(p > metadata.Generator.random((q.shape)), axis=1)
         p = p != 0
         p = x[p, :]
         return p

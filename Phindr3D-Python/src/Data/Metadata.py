@@ -39,12 +39,11 @@ class Metadata:
        Static methods that draw closely from transliterations of the MATLAB functions
        can be found in the DataFunctions class."""
 
-
-    def __init__(self):
+    def __init__(self, rng):
         """Metadata class constructor"""
         # Initialize a random number generator
         # NOTE: 12345 is set as seed for testing purposes
-        self.Generator = np.random.default_rng(12345)
+        self.Generator = rng
 
         # Define user-controlled parameters and set default values
         self.intensityNormPerTreatment = False
@@ -655,11 +654,11 @@ if __name__ == '__main__':
     # Running will prompt user for a text file, image id, stack id, and channel number
     # Since this is only for testing purposes, assume inputted values are all correct types
 
-    Generator = np.random.default_rng(1234)
+    deterministic = np.random.default_rng(1234)
 
     metadatafile = r'testdata\metadata_tests\metadatatest_metadata.txt'
 
-    test = Metadata()
+    test = Metadata(deterministic)
     if test.loadMetadataFile(metadatafile):
 
         with open('testdata\\metadata_tests\\expected.json', 'r') as js:
