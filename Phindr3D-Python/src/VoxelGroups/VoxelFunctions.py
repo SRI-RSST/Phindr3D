@@ -30,7 +30,7 @@ class VoxelFunctions:
     """
 
     @staticmethod
-    def getPixelBins(x, metadata, numBins, random_state=1234):
+    def getPixelBins(x, metadata, numBins, random_state=None):
         """Main function for returning bin centers of pixels, supervoxels, and mega voxels
             x - m x n (m is number of observations, n is number of channels/category fractions
             numBins - number of categories"""

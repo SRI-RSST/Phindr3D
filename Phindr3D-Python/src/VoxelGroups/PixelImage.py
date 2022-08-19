@@ -41,7 +41,7 @@ class PixelImage(VoxelBase):
             startVal += iTmp.shape[0]
             endVal += iTmp.shape[0]
         pixelsForTraining = pixelsForTraining[np.sum(pixelsForTraining, axis=1) > 0, :]
-        self.pixelBinCenters = self.getPixelBins(pixelsForTraining, metadata, self.numVoxelBins)
+        self.pixelBinCenters = self.getPixelBins(pixelsForTraining, metadata, self.numVoxelBins, random_state=1234)
 
     def getTrainingPixels(self, image, metadata, randZ, training, tileinfo):
         slices = list(image.stackLayers)
