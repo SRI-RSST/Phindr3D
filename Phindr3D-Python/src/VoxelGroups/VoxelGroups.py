@@ -176,7 +176,7 @@ if __name__ == '__main__':
     from src.Data.Metadata import *
     from src.Training.Training import *
     import numpy as np
-    deterministic = np.random.default_rng(1234)
+    deterministic = Generator(1234)
     metadatafile = r'testdata\metadata_tests\metadatatest_metadata.txt'
     test = Metadata(deterministic)
     if test.loadMetadataFile(metadatafile):

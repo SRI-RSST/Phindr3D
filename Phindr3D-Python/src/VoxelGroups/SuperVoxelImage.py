@@ -44,12 +44,16 @@ class SuperVoxelImage(VoxelBase):
                 if training.superVoxelPerField > tmp.shape[0]:
                     tilesForTraining = np.concatenate((tilesForTraining, tmp))
                 else:
-                    tmp2Add = np.array([tmp[i, :] for i in metadata.Generator.choice(tmp.shape[0], size=training.superVoxelPerField, replace=False, shuffle=False)])
+                    tmp2Add = np.array([tmp[i, :] for i in metadata.Generator.Generator.choice(tmp.shape[0], size=training.superVoxelPerField, replace=False, shuffle=False)])
                     tilesForTraining = np.concatenate((tilesForTraining, tmp2Add))
         np.savetxt(r'C:\Users\teole\OneDrive\Desktop\just checking can delete1.txt', superVoxelProfile)
         np.savetxt(r'C:\Users\teole\OneDrive\Desktop\just checking can delete2.txt', fgSuperVoxel)
         if len(tilesForTraining) == 0:
             print('\nNo foreground super-voxels found. consider changing parameters') 
-        self.superVoxelBinCenters = self.getPixelBins(tilesForTraining, metadata, self.numSuperVoxelBins, random_state=1234)
+        if metadata.Generator.seed == 1234:
+            random_state = 1234
+        else:
+            random_state = None
+        self.superVoxelBinCenters = self.getPixelBins(tilesForTraining, metadata, self.numSuperVoxelBins, random_state=random_state)
 
 # end class SuperVoxelImage

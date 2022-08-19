@@ -36,7 +36,7 @@ except ImportError:
     from src.Clustering.Clustering import *
     from src.Training.Training import *
 
-Generator = np.random.default_rng()
+Generator = Generator()
 
 class MainGUI(QWidget, external_windows):
     """Defines the main GUI window of Phindr3D"""

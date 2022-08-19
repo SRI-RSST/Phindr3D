@@ -41,12 +41,16 @@ class PixelImage(VoxelBase):
             startVal += iTmp.shape[0]
             endVal += iTmp.shape[0]
         pixelsForTraining = pixelsForTraining[np.sum(pixelsForTraining, axis=1) > 0, :]
-        self.pixelBinCenters = self.getPixelBins(pixelsForTraining, metadata, self.numVoxelBins, random_state=1234)
+        if metadata.Generator.seed == 1234:
+            random_state = 1234
+        else:
+            random_state = None
+        self.pixelBinCenters = self.getPixelBins(pixelsForTraining, metadata, self.numVoxelBins, random_state=random_state)
 
     def getTrainingPixels(self, image, metadata, randZ, training, tileinfo):
         slices = list(image.stackLayers)
         slices = np.array(
-            [slices[i] for i in metadata.Generator.choice(len(slices), size=randZ, replace=False, shuffle=False)])
+            [slices[i] for i in metadata.Generator.Generator.choice(len(slices), size=randZ, replace=False, shuffle=False)])
         trPixels = np.zeros((training.pixelsPerImage * randZ, metadata.GetNumChannels()))
         startVal = 0
         if metadata.intensityNormPerTreatment:
@@ -75,7 +79,7 @@ class PixelImage(VoxelBase):
             croppedIM = self.selectPixelsbyWeights(croppedIM, metadata)
             if croppedIM.shape[0] >= training.pixelsPerImage:
                 trPixels[startVal:startVal + training.pixelsPerImage, :] = np.array([croppedIM[i, :] for i in
-                                                                                     metadata.Generator.choice(
+                                                                                     metadata.Generator.Generator.choice(
                                                                                          croppedIM.shape[0],
                                                                                          size=training.pixelsPerImage,
                                                                                          replace=False, shuffle=False)])
@@ -95,7 +99,7 @@ class PixelImage(VoxelBase):
         for i in range(0, n.shape[0]):
             p[q == i] = n[i]
         p = 1 - p
-        p = np.sum(p > metadata.Generator.random((q.shape)), axis=1)
+        p = np.sum(p > metadata.Generator.Generator.random((q.shape)), axis=1)
         p = p != 0
         p = x[p, :]
         return p
