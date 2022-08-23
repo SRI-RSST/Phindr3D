@@ -131,7 +131,10 @@ class VoxelBase:
                         croppedIM[:, :, jChan] = dfunc.rescaleIntensity(IM,
                             low=lowerbound[jChan],
                             high=upperbound[jChan])
-                except (ValueError, IndexError):
+                # except (ValueError, IndexError): #############################
+                except Exception as e:
+                    print('try rescale')
+                    print(e)
                     return errorVal
             xEnd = -theTileInfo.xOffsetEnd
             if xEnd == -0:
