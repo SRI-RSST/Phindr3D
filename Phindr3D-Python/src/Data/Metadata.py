@@ -56,7 +56,8 @@ class Metadata:
         self.Generator = rng
 
         # Define user-controlled parameters and set default values
-        self.intensityNormPerTreatment = False
+        # self.intensityNormPerTreatment = False
+        self.intensityNormPerTreatment = True
         self.randTrainingPerTreatment = 1
         self.countBackground = PhindConfig.countBackground
         self.randTrainingFields = PhindConfig.randTrainingFields
@@ -334,6 +335,7 @@ class Metadata:
                         tempList = [treatmentIDs[j] for j in
                             self.Generator.Generator.choice(len(treatmentIDs), size=randTrainingPerTreatment,
                                 replace=False, shuffle=False)]
+                    print(tempList)
                 except (ValueError,KeyError):
                     tempList = []
                 randFieldIDList = randFieldIDList + tempList
