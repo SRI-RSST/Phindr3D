@@ -55,11 +55,11 @@ class extractWindow(QDialog):
         samplefilebox.setFixedSize(450, 30)
 
         instructionslabel = QLabel()
-        instructionslabel.setFixedHeight(50)
+        instructionslabel.setFixedHeight(40)
         instructionslabel.setWordWrap(True)
         instructionslabel.setText("Identify key values in the file name, "
             "either by clicking Build Regular Expression or by "
-            "manually entering a regular expression.\nCheck your work by clicking "
+            "manually entering a regular expression. Check your work by clicking "
             "Evaluate Regular Expression.")
 
         expressionbox = QLineEdit()
@@ -76,11 +76,14 @@ class extractWindow(QDialog):
         createregex.setFixedSize(evaluateexpression.minimumSizeHint())
         createregex.setFixedHeight(30)
 
+        outlabel = QLabel()
+        outlabel.setText("Enter output file name")
+
         outputfilebox = QLineEdit()
         outputfilebox.setAlignment(Qt.AlignCenter)
         outputfilebox.setFont(largetext)
         outputfilebox.setPlaceholderText("Output Metadata File Name")
-        outputfilebox.setFixedSize(200, 30)
+        outputfilebox.setFixedSize(450, 30)
 
         createfile = QPushButton("Create Metafile")
         createfile.setFixedSize(createfile.minimumSizeHint())
@@ -218,12 +221,12 @@ class extractWindow(QDialog):
         layout.addWidget(instructionslabel, 2, 0, 1, 4)
         layout.addWidget(createregex, 3, 0, 1, 1)
         layout.addWidget(expressionbox, 3, 1, 1, 3)
+        layout.addWidget(evaluateexpression, 4, 0, 1, 1)
+        layout.addWidget(outlabel, 5, 0, 1, 1)
+        layout.addWidget(outputfilebox, 5, 1, 1, 3)
+        layout.addWidget(createfile, 6, 0, 1, 1)
+        layout.addWidget(cancel, 6, 1, 1, 1)
 
-        layout.addWidget(evaluateexpression, 3, 0, 1, 1)
-
-        layout.addWidget(outputfilebox, 5, 0, 1, 1)
-        layout.addWidget(createfile, 5, 1, 1, 1)
-        layout.addWidget(cancel, 5, 2, 1, 1)
         layout.setSpacing(10)
         self.setLayout(layout)
         self.setFixedSize(self.minimumSizeHint())
