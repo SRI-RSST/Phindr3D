@@ -33,16 +33,17 @@ class extractWindow(QDialog):
         directory = "Image Directory"
         self.samplefilename = "Sample File Name"
         layout = QGridLayout()
-        imagerootbox = QTextEdit()
-        imagerootbox.setReadOnly(True)
-        imagerootbox.setPlaceholderText(directory)
-        imagerootbox.setFixedSize(450, 30)
-        imagerootbox.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        imagerootbox.setFont(largetext)
 
         selectimage = QPushButton("Select Image Directory")
         selectimage.setFixedSize(selectimage.minimumSizeHint())
-        selectimage.setFixedHeight(30)
+        selectimage.setFixedHeight(40)
+
+        imagerootbox = QTextEdit()
+        imagerootbox.setReadOnly(True)
+        imagerootbox.setPlaceholderText(directory)
+        imagerootbox.setFixedSize(450, 50)
+        imagerootbox.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        imagerootbox.setFont(largetext)
 
         samplelabel = QLabel()
         samplelabel.setText("File in the Selected Directory")
@@ -87,11 +88,11 @@ class extractWindow(QDialog):
 
         createfile = QPushButton("Create Metafile")
         createfile.setFixedSize(createfile.minimumSizeHint())
-        createfile.setFixedHeight(30)
+        createfile.setFixedHeight(40)
 
         cancel = QPushButton("Cancel")
         cancel.setFixedSize(cancel.minimumSizeHint())
-        cancel.setFixedHeight(30)
+        cancel.setFixedHeight(40)
 
         # button functions
         def selectImageDir():
