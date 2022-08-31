@@ -44,9 +44,13 @@ class regexWindow(QDialog):
         self.samplefilebox.setFixedSize(450, 30)
 
         instructionlabel = QLabel()
-        instText = "Do not use the following reserved group names: " + ", ".join(self.reservedKeys)
+        instructionlabel.setWordWrap(True)
+        instText = "Select to highlight the value to associate with a group in the file name. " \
+            "Enter the name of the group in the Group Name box, and click the Add Group button. " \
+            "This will add it to the regular expression. " \
+            "Repeat this until all necessary information is included in the regular expression." \
+            "\nDo not use the following reserved group names: " + ", ".join(self.reservedKeys)
         instructionlabel.setText(instText)
-        instructionlabel.setFixedHeight(20)
 
         addGroup = QPushButton("Add Group")
         addGroup.setFixedSize(addGroup.minimumSizeHint())
@@ -128,3 +132,20 @@ class regexWindow(QDialog):
         self.samplefilebox.setText(self.samplefile)
         self.regex = self.samplefile
         self.regexview.setText(self.regex)
+
+import sys
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = regexWindow()
+
+    # Set test file
+    window.samplefile = "r03c19f01p09-ch1sk1fk1fl1.tiff"
+
+    window.inputSampleFile()
+    window.show()
+    result = window.exec()
+    print("Result from the regex window is " + "True" if result else "False")
+    if result:
+        window.close()
+
+# end main
