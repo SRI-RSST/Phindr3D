@@ -51,6 +51,7 @@ class regexWindow(QDialog):
             "Repeat this until all necessary information is included in the regular expression." \
             "\nDo not use the following reserved group names: " + ", ".join(self.reservedKeys)
         instructionlabel.setText(instText)
+        instructionlabel.setFixedSize(450, 60)
 
         addGroup = QPushButton("Add Group")
         addGroup.setFixedSize(addGroup.minimumSizeHint())
@@ -80,27 +81,34 @@ class regexWindow(QDialog):
         cancel.setFixedSize(cancel.minimumSizeHint())
         cancel.setFixedHeight(30)
 
-
-
-
-
         def addRegexGroup():
             filename = self.samplefilebox.toPlainText()
             cursor = self.samplefilebox.textCursor()
             selstart = cursor.selectionStart()
             selend = cursor.selectionEnd()
             groupValue = filename[selstart:selend]
+
             if selstart == 0:
                 rematch = re.search(filename[selstart:selend+1], self.regex)
-                restart = rematch.start()
-                reend = rematch.end()-1
+                if rematch is None:
+                    # The fragment cannot be found in the regex
+                    restart = 0
+                    reend = 0
+                else:
+                    restart = rematch.start()
+                    reend = rematch.end()-1
             else:
                 rematch = re.search(filename[selstart-1:selend+1], self.regex)
-                restart = rematch.start()+1
-                reend = rematch.end()-1
+                if rematch is None:
+                    # The fragment cannot be found in the regex
+                    restart = 0
+                    reend = 0
+                else:
+                    restart = rematch.start()+1
+                    reend = rematch.end()-1
             groupName = groupbox.text()
-            # Check whether a group name has been entered
-            if groupName is None or groupName == "":
+            # Check whether a group name has been entered and a value was found in the string
+            if groupName is None or groupName == "" or (restart == 0 and reend == 0):
                 #do nothing
                 grouplabel = f''
             else:
@@ -111,15 +119,10 @@ class regexWindow(QDialog):
                     grouplabel = f'(?P<{groupName}>\\d+)'
                 else:
                     grouplabel = f'(?P<{groupName}>.+)'
-
             self.regex = self.regex[:restart] + grouplabel + self.regex[reend:]
             self.regexview.setText(self.regex)
             groupbox.clear()
             groupbox.setPlaceholderText("Next Group Name")
-
-
-
-
 
         def finishRegex():
             self.regex = self.regexview.toPlainText()
