@@ -80,6 +80,10 @@ class regexWindow(QDialog):
         cancel.setFixedSize(cancel.minimumSizeHint())
         cancel.setFixedHeight(30)
 
+
+
+
+
         def addRegexGroup():
             filename = self.samplefilebox.toPlainText()
             cursor = self.samplefilebox.textCursor()
@@ -95,18 +99,27 @@ class regexWindow(QDialog):
                 restart = rematch.start()+1
                 reend = rematch.end()-1
             groupName = groupbox.text()
-            # Check whether a reserved group name has been entered
-            if groupName in self.reservedKeys:
-                groupName = groupName+self.appendToFix
-            if groupValue.isnumeric():
-                grouplabel = f'(?P<{groupName}>\\d+)'
+            # Check whether a group name has been entered
+            if groupName is None or groupName == "":
+                #do nothing
+                grouplabel = f''
             else:
-                grouplabel = f'(?P<{groupName}>.+)'
+                # Check whether a reserved group name has been entered
+                if groupName in self.reservedKeys:
+                    groupName = groupName+self.appendToFix
+                if groupValue.isnumeric():
+                    grouplabel = f'(?P<{groupName}>\\d+)'
+                else:
+                    grouplabel = f'(?P<{groupName}>.+)'
 
             self.regex = self.regex[:restart] + grouplabel + self.regex[reend:]
             self.regexview.setText(self.regex)
             groupbox.clear()
             groupbox.setPlaceholderText("Next Group Name")
+
+
+
+
 
         def finishRegex():
             self.regex = self.regexview.toPlainText()
