@@ -124,7 +124,6 @@ class regexWindow(QDialog):
                     grouplabel = f'(?P<{groupName}>\\d+)'
                 else:
                     grouplabel = f'(?P<{groupName}>.+)'
-                print("The grouplabel is: "+grouplabel)
 
             # Translate from the selection to the regex
             try:
@@ -138,12 +137,8 @@ class regexWindow(QDialog):
             lenGroupLabel = len(grouplabel)
             # Number of elements in the array after the new insertion
             elAfterLabel = len(self.fileToRegexPos[selstart:])
-            print(elAfterLabel)
-            # Position to start
-
             for changeIndex in range(elAfterLabel):
                 self.fileToRegexPos[selstart+changeIndex-1] += (lenGroupLabel-sellength)
-            print(self.fileToRegexPos)
 
             self.regexview.setText(self.regex)
             groupbox.clear()
@@ -161,7 +156,6 @@ class regexWindow(QDialog):
             # Fill the index values in the array
             for ix in range(len(self.samplefile)):
                 self.fileToRegexPos.append(ix)
-            print(self.fileToRegexPos)
 
         def finishRegex():
             self.regex = self.regexview.toPlainText()
@@ -194,7 +188,6 @@ class regexWindow(QDialog):
         # Fill the index values in the array
         for ix in range(len(self.samplefile)):
             self.fileToRegexPos.append(ix)
-        print(self.fileToRegexPos)
 
     def buildErrorWindow(self, errormessage, icon, errortitle="ErrorDialog"):
         alert = QMessageBox()
