@@ -666,12 +666,12 @@ if __name__ == '__main__':
 
     deterministic = Generator(1234)
 
-    metadatafile = r'testdata\metadata_tests\metadatatest_metadata.txt'
+    metadatafile = 'testdata/metadata_tests/metadatatest_metadata.txt'
 
     test = Metadata(deterministic)
     if test.loadMetadataFile(metadatafile):
 
-        with open('testdata\\metadata_tests\\expected.json', 'r') as js:
+        with open('testdata/metadata_tests/expected.json', 'r') as js:
             expected = json.load(js)
             js.close()
 
