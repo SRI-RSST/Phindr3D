@@ -659,6 +659,22 @@ class Metadata:
         return True
     # end computeImageParameters
 
+    def compareThresholdArrays(self, observed, expected):
+        if len(observed) != len(expected):
+            return False
+        for i in range(len(observed)):
+            if len(observed[i]) != len(expected[i]):
+                return False
+            # else
+            for j in range(len(observed[i])):
+                print(j)
+                print(float(observed[i][j]))
+                print(float(expected[i][j]))
+                if float(observed[i][j]) != float(expected[i][j]):
+                    return False
+        return True
+    # end compareThresholdArrays
+
 # end class Metadata
 
 if __name__ == '__main__':
@@ -682,9 +698,9 @@ if __name__ == '__main__':
             print("Running computeImageParameters: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
             print("===")
             print('Calculated image parameter comparisons...')
-            print("Lower bound compare: " + str(test.lowerbound) + " and " + str(np.array(expected['lowerbound'])))
-            print("Upper bound compare: " + str(test.upperbound) + " and " + str(np.array(expected['upperbound'])))
-            print("intensityThreshold compare: " + str(test.intensityThreshold) + " and " + str(np.array(expected['intensity_threshold'])))
+            # print("Lower bound compare: " + str(test.lowerbound) + " and " + str(np.array(expected['lowerbound'])))
+            # print("Upper bound compare: " + str(test.upperbound) + " and " + str(np.array(expected['upperbound'])))
+            # print("intensityThreshold compare: " + str(test.intensityThreshold) + " and " + str(expected['intensity_threshold']))
             lowerequal = (test.lowerbound == np.array(expected['lowerbound'])).all()
             upperequal = (test.upperbound == np.array(expected['upperbound'])).all()
             intequal = (test.intensityThreshold == np.array(expected['intensity_threshold'])).all()
@@ -698,10 +714,10 @@ if __name__ == '__main__':
             treatmentTestRun = test.computeImageParameters()
             print("Running computeImageParameters by treatment: " + "Successful" if treatmentTestRun else "Unsuccessful")
             print("===")
-            print("Lower bound compare: " + str(test.lowerbound) + " and " + str(np.array(expected['treatment_lowerbound'])))
-            print("Upper bound compare: " + str(test.upperbound) + " and " + str(np.array(expected['treatment_upperbound'])))
-            print("intensityThreshold compare: " + str(test.intensityThreshold) + " and " + str(
-                np.array(expected['treatment_intensity_threshold'])))
+            print('Calculated image parameter by treatment comparisons...')
+            # print("Lower bound compare: " + str(test.lowerbound) + " and " + str(np.array(expected['treatment_lowerbound'])))
+            # print("Upper bound compare: " + str(test.upperbound) + " and " + str(np.array(expected['treatment_upperbound'])))
+            # print("intensityThreshold compare: " + str(test.intensityThreshold) + " and " + str(expected['treatment_intensity_threshold']))
             treatlowerequal = (test.lowerbound == np.array(expected['treatment_lowerbound'])).all()
             treatupperequal = (test.upperbound == np.array(expected['treatment_upperbound'])).all()
             treatintequal = (test.intensityThreshold == np.array(expected['treatment_intensity_threshold'])).all()
