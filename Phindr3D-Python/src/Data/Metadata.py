@@ -254,7 +254,7 @@ class Metadata:
                     if isinstance(tmpTreat, list):
                         treatmentList.extend(tmpTreat)
                     else:
-                        pass
+                        treatmentList.append(tmpTreat)
                 # Use set to find unique values in a list, then change type back to list
                 treatmentList = list(set(treatmentList))
                 treatmentList.sort()
@@ -325,8 +325,11 @@ class Metadata:
             allTreatments = self.GetAllTreatments()
             allTrKeys = np.array(list(allTreatments.keys()))
             allTrValues = np.array(list(allTreatments.values()))
-            randTrainingPerTreatment = \
-                -(-randTrainingFields//len(uTreat)) #ceiling division
+            try:
+                randTrainingPerTreatment = \
+                    -(-randTrainingFields//len(uTreat)) #ceiling division
+            except ZeroDivisionError:
+                randTrainingPerTreatment = 1
             randFieldIDList = []
             for treat in uTreat:
                 tempList = []
@@ -400,7 +403,7 @@ class Metadata:
                 # index of the treatment for this image in the list of all treatments
                 # if the treatment type is not found (or there are no treatments), return error
                 try:
-                    grpVal[i] = allTreatmentTypes.index(theImageObject.GetTreatment()[0])
+                    grpVal[i] = allTreatmentTypes.index(theImageObject.GetTreatment())
                 except (ValueError, IndexError):
                     return errorVal
         # end for images
@@ -570,7 +573,7 @@ class Metadata:
             # index of the treatment for this image in the list of all treatments
             # if the treatment type is not found (or there are no treatments), return error
             try:
-                grpVal = allTreatmentTypes.index(imageObject.GetTreatment()[0])
+                grpVal = allTreatmentTypes.index(imageObject.GetTreatment())
             except (ValueError, IndexError):
                 return errorVal
         # end if
@@ -690,6 +693,8 @@ if __name__ == '__main__':
         print(f'Intensity threshold expected result: {intequal}')
         print("===")
         test.intensityNormPerTreatment = True
+        test.treatmentColNameForNormalization = 'Treatment'
+        test.trainingColforImageCategories = 'Treatment'
         print("Running computeImageParameters by treatment: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
         print("===")
         treatlowerequal = (test.lowerbound == np.array(expected['treatment_lowerbound'])).all()
