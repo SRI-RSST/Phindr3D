@@ -659,22 +659,6 @@ class Metadata:
         return True
     # end computeImageParameters
 
-    def compareThresholdArrays(self, observed, expected):
-        if len(observed) != len(expected):
-            return False
-        for i in range(len(observed)):
-            if len(observed[i]) != len(expected[i]):
-                return False
-            # else
-            for j in range(len(observed[i])):
-                print(j)
-                print(float(observed[i][j]))
-                print(float(expected[i][j]))
-                if float(observed[i][j]) != float(expected[i][j]):
-                    return False
-        return True
-    # end compareThresholdArrays
-
 # end class Metadata
 
 if __name__ == '__main__':
