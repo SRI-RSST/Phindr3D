@@ -224,7 +224,7 @@ class Metadata:
                     elif isinstance(tmpTreat, list):
                         treat = tmpTreat[0]
                     else:
-                        treat = None
+                        treat = tmpTreat
                     allTreatments[imgID] = treat
             else:
                 pass
@@ -325,6 +325,7 @@ class Metadata:
             allTreatments = self.GetAllTreatments()
             allTrKeys = np.array(list(allTreatments.keys()))
             allTrValues = np.array(list(allTreatments.values()))
+            # Protect against ZeroDivisionError if len(uTreat) is 0
             try:
                 randTrainingPerTreatment = \
                     -(-randTrainingFields//len(uTreat)) #ceiling division
@@ -663,45 +664,51 @@ class Metadata:
 if __name__ == '__main__':
     import json
     """Tests of the Metadata class that can be run directly."""
-    # For testing purposes:
-    # Running will prompt user for a text file, image id, stack id, and channel number
-    # Since this is only for testing purposes, assume inputted values are all correct types
 
     deterministic = Generator(1234)
 
     metadatafile = 'testdata/metadata_tests/metadatatest_metadata.txt'
 
     test = Metadata(deterministic)
-    if test.loadMetadataFile(metadatafile):
+    try:
+        if test.loadMetadataFile(metadatafile):
 
-        with open('testdata/metadata_tests/expected.json', 'r') as js:
-            expected = json.load(js)
-            js.close()
+            with open('testdata/metadata_tests/expected.json', 'r') as js:
+                expected = json.load(js)
+                js.close()
 
-        print("So, did it load? " + "Yes!" if test.metadataLoadSuccess else "No.")
-        print("===")
-        print("Running computeImageParameters: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
-        print("===")
-        print('Calculated image parameter comparisons...')
-        print("Lower bound compare: " + str(test.lowerbound) + " and " + str(np.array(expected['lowerbound'])))
-        print("Upper bound compare: " + str(test.upperbound) + " and " + str(np.array(expected['upperbound'])))
-        print("intensityThreshold compare: " + str(test.intensityThreshold) + " and " + str(np.array(expected['intensity_threshold'])))
-        lowerequal = (test.lowerbound == np.array(expected['lowerbound'])).all()
-        upperequal = (test.upperbound == np.array(expected['upperbound'])).all()
-        intequal = (test.intensityThreshold == np.array(expected['intensity_threshold'])).all()
-        print(f'Scaling factor expected result: { lowerequal and upperequal }')
-        print(f'Intensity threshold expected result: {intequal}')
-        print("===")
-        test.intensityNormPerTreatment = True
-        test.treatmentColNameForNormalization = 'Treatment'
-        test.trainingColforImageCategories = 'Treatment'
-        print("Running computeImageParameters by treatment: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
-        print("===")
-        treatlowerequal = (test.lowerbound == np.array(expected['treatment_lowerbound'])).all()
-        treatupperequal = (test.upperbound == np.array(expected['treatment_upperbound'])).all()
-        treatintequal = (test.intensityThreshold == np.array(expected['treatment_intensity_threshold'])).all()
-        print(f'Scaling factors by treatment expected result: {treatlowerequal and treatupperequal}')
-        print(f'Intensity threshold expected result: {treatintequal}')
-    else:
-        print("loadMetadataFile was unsuccessful")
+            print("So, did it load? " + "Yes!" if test.metadataLoadSuccess else "No.")
+            print("===")
+            print("Running computeImageParameters: " + "Successful" if test.computeImageParameters() else "Unsuccessful")
+            print("===")
+            print('Calculated image parameter comparisons...')
+            print("Lower bound compare: " + str(test.lowerbound) + " and " + str(np.array(expected['lowerbound'])))
+            print("Upper bound compare: " + str(test.upperbound) + " and " + str(np.array(expected['upperbound'])))
+            print("intensityThreshold compare: " + str(test.intensityThreshold) + " and " + str(np.array(expected['intensity_threshold'])))
+            lowerequal = (test.lowerbound == np.array(expected['lowerbound'])).all()
+            upperequal = (test.upperbound == np.array(expected['upperbound'])).all()
+            intequal = (test.intensityThreshold == np.array(expected['intensity_threshold'])).all()
+            print(f'Scaling factor expected result: { lowerequal and upperequal }')
+            print(f'Intensity threshold expected result: {intequal}')
+            print("===")
+            test.intensityNormPerTreatment = True
+            test.treatmentColNameForNormalization = 'Treatment'
+            test.trainingColforImageCategories = 'Treatment'
+            # Run the test with the new Treatment settings
+            treatmentTestRun = test.computeImageParameters()
+            print("Running computeImageParameters by treatment: " + "Successful" if treatmentTestRun else "Unsuccessful")
+            print("===")
+            print("Lower bound compare: " + str(test.lowerbound) + " and " + str(np.array(expected['treatment_lowerbound'])))
+            print("Upper bound compare: " + str(test.upperbound) + " and " + str(np.array(expected['treatment_upperbound'])))
+            print("intensityThreshold compare: " + str(test.intensityThreshold) + " and " + str(
+                np.array(expected['treatment_intensity_threshold'])))
+            treatlowerequal = (test.lowerbound == np.array(expected['treatment_lowerbound'])).all()
+            treatupperequal = (test.upperbound == np.array(expected['treatment_upperbound'])).all()
+            treatintequal = (test.intensityThreshold == np.array(expected['treatment_intensity_threshold'])).all()
+            print(f'Scaling factors by treatment expected result: {treatlowerequal and treatupperequal}')
+            print(f'Intensity threshold expected result: {treatintequal}')
+        else:
+            print("loadMetadataFile was unsuccessful")
+    except FileNotFoundError:
+        print("File not found in loadMetadataFile")
 # end main
