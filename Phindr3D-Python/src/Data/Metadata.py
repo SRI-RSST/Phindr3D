@@ -458,15 +458,6 @@ class Metadata:
         return (lowerbound, upperbound)
     # end getScalingFactorforImages
 
-
-
-
-
-
-
-
-
-
     def getImageInformation(self, theImage, chan=0):
         """Get information about the image files.
             Called in getPixelBinCenters, getImageThresholdValues,
