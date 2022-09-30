@@ -204,6 +204,7 @@ class regexWindow(QDialog):
         alert.setIcon(icon)
         return alert
 
+import sys
 class example_regex(QDialog):
     def __init__(self):
         super(example_regex, self).__init__()
@@ -214,8 +215,16 @@ class example_regex(QDialog):
         examplelabel.setWordWrap(True)
         #example image
         img = QLabel()
-        path = os.path.dirname(os.path.abspath(__file__))
-        img.setPixmap(QPixmap(os.path.join(path, 'regex_example.png')))
+
+        try:
+            # _MEIPASS is a temporary directory that only exists
+            # while running a compiled executable
+            basePath = sys._MEIPASS
+        except Exception:
+            # This is the directory of the current file
+            basePath = os.path.dirname(__file__)
+        imagePath = os.path.abspath(os.path.join(basePath, 'regex_example.png'))
+        img.setPixmap(QPixmap(imagePath))
         #add Widgets/layout
         layout.addWidget(examplelabel, 0, 0)
         layout.addWidget(img, 1, 0)
