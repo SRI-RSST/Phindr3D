@@ -100,7 +100,7 @@ class regexWindow(QDialog):
             # the original sample file are in the regular expression
             # as group labels are added to the regex
             # Use 9999 as the previous use value for safety. The type of fileToRegexPos
-            # is set to 'i' (signed int), but if it is set to 'I' (unsigned int), 
+            # is set to 'i' (signed int), but if it is set to 'I' (unsigned int),
             # using -1 as the previousUseVal crashes the program (full crash, not Python error).
             previousUseVal = 9999
             try:
@@ -239,16 +239,13 @@ class example_regex(QDialog):
         examplelabel.setWordWrap(True)
         #example image
         img = QLabel()
-
         try:
             # _MEIPASS is a temporary directory that only exists
             # while running a compiled executable
-            basePath = sys._MEIPASS
-        except Exception:
-            # This is the directory of the current file
-            basePath = os.path.dirname(__file__)
-        imagePath = os.path.abspath(os.path.join(basePath, 'regex_example.png'))
-        img.setPixmap(QPixmap(imagePath))
+            path = sys._MEIPASS #run Phindr.exe (pyinstaller temp folder)
+        except:
+            path = os.path.dirname(os.path.abspath(__file__)) #run Phindr.py script
+        img.setPixmap(QPixmap(os.path.join(path, 'regex_example.png')))
         #add Widgets/layout
         layout.addWidget(examplelabel, 0, 0)
         layout.addWidget(img, 1, 0)
