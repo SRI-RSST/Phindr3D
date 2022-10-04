@@ -99,9 +99,9 @@ class regexWindow(QDialog):
             # The array fileToRegexPos tracks where characters in
             # the original sample file are in the regular expression
             # as group labels are added to the regex
-            # Check the type of fileToRegexPos. If array type I (unsigned int),
-            # then using -1 as the previousUseVal will crash the program.
-            # Use 9999 for safety.
+            # Use 9999 as the previous use value for safety. The type of fileToRegexPos
+            # is set to 'i' (signed int), but if it is set to 'I' (unsigned int), 
+            # using -1 as the previousUseVal crashes the program (full crash, not Python error).
             previousUseVal = 9999
             try:
                 filename = self.samplefilebox.toPlainText()
