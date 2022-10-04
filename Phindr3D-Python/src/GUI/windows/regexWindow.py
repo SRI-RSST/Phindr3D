@@ -121,7 +121,7 @@ class regexWindow(QDialog):
                 errWin.exec()
                 return
 
-            # Test all values in the selection. If any are -1,
+            # Test all values in the selection. If any are equal to previousUseVal,
             # part of this text was included in a previous selection.
             # Show error window and return from this function
             testVal = any(ele == previousUseVal for ele in self.fileToRegexPos[selstart:selend])
